@@ -2,14 +2,18 @@
 * {
 	box-sizing: border-box;
 }
-
+#buttons {
+	float: left;
+}
 #pattern {
+	float: left;
 	position: relative;
-	clear: both;
+	clear: right;
 	overflow: hidden;
 	height: 426px;
 	width: 510px;
 	border: 1px solid #cccccc;
+	margin: 0 30px;
 }
 
 .weft {

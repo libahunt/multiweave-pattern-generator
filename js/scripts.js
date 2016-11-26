@@ -16,16 +16,27 @@ var wefts = [];
 var crossingPoints = [];
 var buttons = [];
 
+var crossingPointsHistory = [];
+var step = 0;
+
 $(function() {
 
-	function Point(x, y, ownerWeft0, index) {
+	function Point(x, y, ownerWeft0) {
 		this.x = x;
 		this.y = y;
 		this.ownerWefts = [];
 		this.ownerWefts.push(wefts.indexOf(ownerWeft0));
 		this.draw = function() {
-			var a = $('<a></a>').css('left', this.x+'px').css('top', this.y+'px').addClass('point').attr('title', index);	
-			$('#pattern').append(a);
+			var obj = this;
+			var div = $('<div></div>')
+				.css('left', this.x+'px')
+				.css('top', this.y+'px')
+				.addClass('point')
+				.on('click', function() {
+					route(crossingPointsHistory[crossingPointsHistory.length-1], obj);
+					crossingPointsHistory.push(obj);
+				});
+			$('#pattern').append(div);
 		}
 	}
 
@@ -133,11 +144,13 @@ $(function() {
 				wefts[i].generatePoints();
 			}
 		}
+		crossingPointsHistory.push(crossingPoints[0]);
 
-	//route(crossingPoints[0],crossingPoints[6]);
+		$('#undo').show().on('click', ctrlZ);
+		$(this).hide();
 	});
 
-	
+
 
 
 
@@ -146,6 +159,8 @@ $(function() {
 });
 
 function route(point1, point2) {
+	step++;
+	console.log(step);
 	var commonWeft = undefined;
 	for (var i=0; i<point1.ownerWefts.length; i++) {
 		for (var j=0; j<point2.ownerWefts.length; j++) {
@@ -156,18 +171,24 @@ function route(point1, point2) {
 		}
 	}
 	if (commonWeft != undefined) {
-		gcodeArc(point1, point2, commonWeft);
+		$('#gcode').html($('#gcode').html() + gcodeArc(point1, point2, commonWeft));
 		drawSvgArc(point1, point2, commonWeft);
 	}
 	else {
-		gcodeLine(point1, point2);
+		$('#gcode').html($('#gcode').html() + gcodeLine(point1, point2));
 		drawSvgLine(point1, point2);
 	}
 }
 
-function gcodeArc(point1, point2, commonWeft) {
-	var direction = arcDirection(point1, point2, commonWeft);
-	var result = "G";
+function gcodeLine(point1, point2) {
+	return '\nG00 X' +  point2.x + ' Y' + point2.y + ' Z# ';
+	//G00 X#.#### Y#.#### Z#.#### //maximum feed rate
+	//G01 X#.#### Y#.#### Z.#.#### F#.####
+}
+
+function gcodeArc(point1, point2, commonWeftIndex) {
+	var direction = arcDirection(point1, point2, commonWeftIndex);
+	var result = "\nG";
 	if (direction=='cw') {
 		result += '02 ';
 	}
@@ -176,21 +197,10 @@ function gcodeArc(point1, point2, commonWeft) {
 	}
 	result += ('X' + point2.x + ' '); 
 	result += ('Y' + point2.y + ' ');
-	result += ('I' + (commonWeft.x - point1.x) + ' ');
-	result += ('J' + (commonWeft.y - point1.y) + ' ');
-	//result += 'F#';
+	result += ('I' + (wefts[commonWeftIndex].x - point1.x) + ' ');
+	result += ('J' + (wefts[commonWeftIndex].y - point1.y) + ' ');
+	//result += 'F#';//F feed rate ... (inch/min)
 	return result;
-
-//X#.#### Y#.#### I#.#### J#.#### F#.####
-//X, Y end point coordinates
-//I, J arc center relative to starting point
-//F feed rate ... (inch/min)
-}
-
-function gcodeLine(point1, point2) {
-	return 'G00 X' +  point2.x + ' Y' + point2.y + ' Z#';
-	//G00 X#.#### Y#.#### Z#.#### //maximum feed rate
-	//G01 X#.#### Y#.#### Z.#.#### F#.####
 }
 
 function drawSvgLine(point1, point2) {
@@ -205,9 +215,23 @@ function drawSvgArc(point1, point2, commonWeft) {
 	if (direction == 'cw') {
 		flag = 1;
 	}
+	//First path is a "shadow"
 	var path = 'M '+point1.x+' '+point1.y+' A '+r+' '+r+' 0 0'+ flag+' '+point2.x+' '+point2.y;
   var arc = makeSVG('path', {d: path,
-   stroke: '#ff3300', 'stroke-width': 2, 'fill': 'transparent'});
+   'stroke': 'rgba(255,255,255,0.85)', 
+   'stroke-width': 8, 
+   'fill': 'transparent',
+   'id': 'pathshadow'+step
+ });
+  document.getElementById('layerWeaves').appendChild(arc);
+  //Second path is colored line
+  path = 'M '+point1.x+' '+point1.y+' A '+r+' '+r+' 0 0'+ flag+' '+point2.x+' '+point2.y;
+  arc = makeSVG('path', {d: path,
+    'stroke': '#ff3300', 
+    'stroke-width': 2, 
+    'fill': 'transparent',
+    'id': 'path'+step
+  });
   document.getElementById('layerWeaves').appendChild(arc);
 }
 
@@ -229,10 +253,10 @@ function arcDirection(point1, point2, commonWeftIndex) {
 			point2index = i;
 		}
 	}
-	if (point1index==6 && point2index==0) {
+	if (point1index==5 && point2index==0) {
 		return 'cw';
 	}
-	else if (point1index==0 && point2index==6) {
+	else if (point1index==0 && point2index==5) {
 		return 'ccw';
 	}
 	else if (point1index<point2index) {
@@ -241,4 +265,21 @@ function arcDirection(point1, point2, commonWeftIndex) {
 	else {
 		return 'ccw';
 	}
+}
+
+function ctrlZ() {
+	var gcode = $('#gcode').html();
+	if(gcode.lastIndexOf("\n")>-1) {
+	  gcode = gcode.substring(0, gcode.lastIndexOf("\n"));
+	} 
+	else {
+	  alert("Can't undo");
+	  return;
+	}
+	$('#gcode').html(gcode);
+	console.log($('#pathshadow'+step));
+	document.getElementById('layerWeaves').removeChild(document.getElementById('pathshadow'+step));
+	document.getElementById('layerWeaves').removeChild(document.getElementById('path'+step));
+	step--;
+	crossingPointsHistory.pop();
 }

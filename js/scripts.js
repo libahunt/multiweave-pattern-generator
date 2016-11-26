@@ -69,7 +69,6 @@ $(function() {
 	    		this.div.addClass('use');
 	    	}	    	
 	    }
-	    //console.log(this.div);
 	  }
 	  this.toggleUse = function() {
 	  	this.use = !this.use;
@@ -155,12 +154,10 @@ $(function() {
 
 
 
-
 });
 
 function route(point1, point2) {
 	step++;
-	console.log(step);
 	var commonWeft = undefined;
 	for (var i=0; i<point1.ownerWefts.length; i++) {
 		for (var j=0; j<point2.ownerWefts.length; j++) {
@@ -181,14 +178,14 @@ function route(point1, point2) {
 }
 
 function gcodeLine(point1, point2) {
-	return '\nG00 X' +  point2.x + ' Y' + point2.y + ' Z# ';
+	return ';'+step+' \nG00 X' +  point2.x + ' Y' + point2.y + ' Z# \n';
 	//G00 X#.#### Y#.#### Z#.#### //maximum feed rate
 	//G01 X#.#### Y#.#### Z.#.#### F#.####
 }
 
 function gcodeArc(point1, point2, commonWeftIndex) {
 	var direction = arcDirection(point1, point2, commonWeftIndex);
-	var result = "\nG";
+	var result = ';'+step+' \nG';
 	if (direction=='cw') {
 		result += '02 ';
 	}
@@ -198,7 +195,7 @@ function gcodeArc(point1, point2, commonWeftIndex) {
 	result += ('X' + point2.x + ' '); 
 	result += ('Y' + point2.y + ' ');
 	result += ('I' + (wefts[commonWeftIndex].x - point1.x) + ' ');
-	result += ('J' + (wefts[commonWeftIndex].y - point1.y) + ' ');
+	result += ('J' + (wefts[commonWeftIndex].y - point1.y) + ' \n');
 	//result += 'F#';//F feed rate ... (inch/min)
 	return result;
 }
@@ -270,14 +267,13 @@ function arcDirection(point1, point2, commonWeftIndex) {
 function ctrlZ() {
 	var gcode = $('#gcode').html();
 	if(gcode.lastIndexOf("\n")>-1) {
-	  gcode = gcode.substring(0, gcode.lastIndexOf("\n"));
+	  gcode = gcode.substring(0, gcode.lastIndexOf(";"));
 	} 
 	else {
 	  alert("Can't undo");
 	  return;
 	}
 	$('#gcode').html(gcode);
-	console.log($('#pathshadow'+step));
 	document.getElementById('layerWeaves').removeChild(document.getElementById('pathshadow'+step));
 	document.getElementById('layerWeaves').removeChild(document.getElementById('path'+step));
 	step--;

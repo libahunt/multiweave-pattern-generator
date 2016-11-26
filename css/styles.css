@@ -1,0 +1,42 @@
+
+* {
+	box-sizing: border-box;
+}
+
+#pattern {
+	position: relative;
+	clear: both;
+	overflow: hidden;
+	height: 426px;
+	width: 510px;
+	border: 1px solid #cccccc;
+}
+
+.weft {
+	width: 20px;
+	height: 20px;
+	border-radius: 10px;
+	position: absolute;
+	margin-top: -10px;
+	margin-left: -10px;
+	border: 3px solid transparent;
+}
+.weft {
+	border-color: #cccccc;
+}
+.prewefting .weft.use {
+	border-color: #000000;
+}
+.weft.hidden {
+	display: none;
+}
+
+.point {
+	width: 6px;
+	height: 6px;
+	border-radius: 3px;
+	border: 2px solid #cc0000;
+	position: absolute;
+	margin-top: -3px;
+	margin-left: -3px;
+}

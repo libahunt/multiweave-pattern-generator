@@ -1,5 +1,6 @@
 var noOfWeftsX = 8;
 var noOfWeftsY = 8;
+var layerHeight = 20;
 var weftSpacingX = 60;
 var weftSpacingY = Math.sqrt(Math.pow(weftSpacingX,2) - Math.pow(weftSpacingX/2,2));
 var pointsOffsets = [
@@ -12,12 +13,17 @@ var pointsOffsets = [
 ];
 var r = weftSpacingX/2;
 
+
 var wefts = [];
 var crossingPoints = [];
 var buttons = [];
 
 var crossingPointsHistory = [];
 var step = 0;
+var layer = 0;
+var zBottomHeight = 0;
+var zTopHeight = 0;
+var zCurrent = 0;
 
 $(function() {
 
@@ -168,24 +174,38 @@ function route(point1, point2) {
 		}
 	}
 	if (commonWeft != undefined) {
+		$('#gcode').html($('#gcode').html() + gcodeZ('arc', point1, point2));
 		$('#gcode').html($('#gcode').html() + gcodeArc(point1, point2, commonWeft));
 		drawSvgArc(point1, point2, commonWeft);
 	}
 	else {
+		$('#gcode').html($('#gcode').html() + gcodeZ('line', point1, point2));
 		$('#gcode').html($('#gcode').html() + gcodeLine(point1, point2));
 		drawSvgLine(point1, point2);
 	}
 }
 
+function gcodeZ(type, point1, point2) {
+	//TODO line-type specific stuff
+	var subLayersInPoint = 0;
+	for (var i=0; i<crossingPointsHistory.length; i++) {
+		if (crossingPointsHistory[i].x == point2.x && crossingPointsHistory[i].y == point2.y) {
+			subLayersInPoint++;
+		}
+	}
+	zCurrent = zBottomHeight + subLayersInPoint*layerHeight;
+	return ';'+step+' \nG00 X' +  point1.x + ' Y' + point1.y + ' Z'+zCurrent+' \n';
+}
+
 function gcodeLine(point1, point2) {
-	return ';'+step+' \nG00 X' +  point2.x + ' Y' + point2.y + ' Z# \n';
+	return 'G00 X' +  point2.x + ' Y' + point2.y + ' Z'+zCurrent+' \n';
 	//G00 X#.#### Y#.#### Z#.#### //maximum feed rate
 	//G01 X#.#### Y#.#### Z.#.#### F#.####
 }
 
 function gcodeArc(point1, point2, commonWeftIndex) {
 	var direction = arcDirection(point1, point2, commonWeftIndex);
-	var result = ';'+step+' \nG';
+	var result = 'G';
 	if (direction=='cw') {
 		result += '02 ';
 	}

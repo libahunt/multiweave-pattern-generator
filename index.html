@@ -1,0 +1,79 @@
+<!doctype html>
+
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+
+  <title>MultiWeave generator</title>
+  <meta name="description" content="MultiWeave 3D weaving machine g-code generator">
+  <meta name="author" content="">
+
+  <link rel="stylesheet" href="css/styles.css?v=1.0">
+  <link rel="stylesheet" href="css/styles2.css?v=1.0">
+  <link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
+
+  <!--[if lt IE 9]>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv.js"></script>
+  <![endif]-->
+</head>
+
+<body>
+	
+	<h1><span class="multi">Multi</span><span class="weave">Weave</span></h1>
+	<div id="intro-wrapper">
+		<p>MultiWeave is a 3D textile weaving machine.<br>
+		<a href="http://www.railreed.ee/multiweave-people-process">Take a look at the hardware we built at Tehnohack (21.-23. October 2016 in Tallinn)</a><br>
+		Here is software to generate gcode for the CNC weaving machine.
+		<br>
+		</p>
+		
+			<div id="images">
+		<img src="images/MWstep1.png" alt="">
+		<img src="images/MWstep1-rl1.jpg" alt="">
+		<img src="images/MWstep2.png" alt="">
+		<img src="images/MWstep2-rl1.jpg" alt="">
+		<img src="images/MWstep3-rl1.jpg" alt="">
+	</div>
+	</div>
+
+
+	<div class="clear"></div>
+
+	<div id="buttons">
+		<p id="prewefting-instruction">The view shows the "cross-section" of fabric.<br>
+			These circles are possible positions for tubes that hold warp yarns upright. Choose the warps that you wish to use. Then click "Warping done".</p>
+		<p id="weaving-instruction" style="display: none;">Gray circles are warps that you chose. Click on the red dots to choose path for the weft thread. Yarn starts from the first red dot in the first row. You can use "Undo" button if the line bumps into a tube or if the result does not look like you wanted it.<br>
+		G-code for the CNC machine is generated into the box on the right.</p>
+		<button id="endWefting">Warping done</button>
+		<button id="undo" style="display: none;">Undo</button>
+		<div class="clear"></div>
+		<br>
+		<br>
+		<p class="explanation">In development</p>
+		<button id="newlayer" disabled="disabled">New layer</button>
+		<button id="save" disabled="disabled">Save</button>
+	</div>
+
+	<div id="pattern-wrapper">
+		<div id="pattern" class="prewefting">
+			<svg id="layerWeaves" width="510" height="426"></svg>
+		</div>
+	</div>
+	
+	<div id="gcode-wrapper">
+		<h3>G-code</h3>
+		<textarea id="gcode"></textarea>
+		<h3 style="display: none;">Plot data</h3>
+		<textarea id="plot" style="display: none;"></textarea>
+	</div>
+
+	<div class="clear"></div>
+
+	<div id="outro-wrapper">
+
+	</div>
+
+	<script src="js/jquery-3.1.1.min.js"></script>
+  <script src="js/scripts.js"></script>
+</body>
+</html>

@@ -32,9 +32,10 @@ $(function() {
 		this.y = y;
 		this.ownerWefts = [];
 		this.ownerWefts.push(wefts.indexOf(ownerWeft0));
+		this.div = undefined;
 		this.draw = function() {
 			var obj = this;
-			var div = $('<div></div>')
+			var div = $('<a></a>')
 				.css('left', this.x+'px')
 				.css('top', this.y+'px')
 				.addClass('point')
@@ -43,6 +44,7 @@ $(function() {
 					crossingPointsHistory.push(obj);
 				});
 			$('#pattern').append(div);
+			this.div = div;
 		}
 	}
 
@@ -123,8 +125,8 @@ $(function() {
 		}
 		for (var j=0; j<noOfWeftsX; j++) {
 			var weftSlot = new Weft (
-				weftSpacingX/2 + j * weftSpacingX + rowOffsetX,
-				weftSpacingX/2 + i * weftSpacingY,
+				weftSpacingX + weftSpacingX/2 + j * weftSpacingX + rowOffsetX,
+				weftSpacingX + weftSpacingX/2 + i * weftSpacingY,
 				false
 			);
 			weftSlot.draw();
@@ -132,9 +134,15 @@ $(function() {
 		}
 	}
 
+	var canvasWidth = (2*weftSpacingX + weftSpacingX/2 + j * weftSpacingX + rowOffsetX) +'px';
+	var canvasHeight = (2*weftSpacingX + weftSpacingX/2 + i * weftSpacingY) +'px';
+	$("#pattern")
+		.css('width', canvasWidth)
+		.css('height', canvasHeight);
+	$("#layerWeaves")
+		.css('width', canvasWidth)
+		.css('height', canvasHeight);
 
-	//Generate buttons.
-		//TODO
 
 
 	//"Wefts done" button
@@ -151,7 +159,11 @@ $(function() {
 		}
 		crossingPointsHistory.push(crossingPoints[0]);
 
+		crossingPoints[0].div.addClass('start');
+
 		$('#undo').show().on('click', ctrlZ);
+		$('#prewefting-instruction').hide();
+		$('#weaving-instruction').show();
 		$(this).hide();
 	});
 
@@ -221,8 +233,25 @@ function gcodeArc(point1, point2, commonWeftIndex) {
 }
 
 function drawSvgLine(point1, point2) {
-  var line = makeSVG('line', {x1: point1.x, y1: point1.y, x2: point2.x, y2: point2.y,
-   stroke: '#ff3300', 'stroke-width': 2});
+  var line = makeSVG('line', {
+  	x1: point1.x, 
+  	y1: point1.y, 
+  	x2: point2.x, 
+  	y2: point2.y,
+    'stroke': 'rgba(255,255,255,0.85)', 
+    'stroke-width': 8,
+ 	  'id': 'pathshadow'+step
+ 	});
+ 	document.getElementById('layerWeaves').appendChild(line);
+  line = makeSVG('line', {
+  	x1: point1.x, 
+  	y1: point1.y, 
+  	x2: point2.x, 
+  	y2: point2.y,
+    stroke: '#ff3300', 
+    'stroke-width': 2,
+    'id': 'path'+step
+  });
   document.getElementById('layerWeaves').appendChild(line);
 }
 
@@ -239,7 +268,7 @@ function drawSvgArc(point1, point2, commonWeft) {
    'stroke-width': 8, 
    'fill': 'transparent',
    'id': 'pathshadow'+step
- });
+  });
   document.getElementById('layerWeaves').appendChild(arc);
   //Second path is colored line
   path = 'M '+point1.x+' '+point1.y+' A '+r+' '+r+' 0 0'+ flag+' '+point2.x+' '+point2.y;

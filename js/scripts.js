@@ -1,143 +1,157 @@
-var noOfWeftsX = 8;
-var noOfWeftsY = 8;
-var layerHeight = 20;
+var Pattern = function() {
+	this.noOfWarpsX = 8;
+	this.noOfWarpsY = 8;
+	this.layerHeight = 20;
+	this.warpSpacingX = 60;
+	this.warpSpacingY = Math.sqrt(Math.pow(this.warpSpacingX,2) - Math.pow(this.warpSpacingX/2,2));
+	this.pointsOffsets = [
+		[	-1*this.warpSpacingX/4, -1*this.warpSpacingY/2],
+		[	   this.warpSpacingX/4, -1*this.warpSpacingY/2],
+		[		 this.warpSpacingX/2, 	0],
+		[		 this.warpSpacingX/4,		this.warpSpacingY/2],
+		[	-1*this.warpSpacingX/4, 	this.warpSpacingY/2],
+		[	-1*this.warpSpacingX/2, 	0],
+	];
+	this.r = this.warpSpacingX/2;
+	this.warps = [];
+  this.crossingPoints = [];
+  this.buttons = [];
+
+  this.crossingPointsHistory = [];
+  this.step = 0;
+  this.layer = 0;
+  this.zBottomHeight = 0;
+  this.zTopHeight = 0;
+  this.zCurrent = 0;
+}
+
+var pattern = new Pattern();
 //TODO: separate spacing in CNC and in browser
-var weftSpacingX = 60;
-var weftSpacingY = Math.sqrt(Math.pow(weftSpacingX,2) - Math.pow(weftSpacingX/2,2));
-var pointsOffsets = [
-	[	-1*weftSpacingX/4, -1*weftSpacingY/2],
-	[	   weftSpacingX/4, -1*weftSpacingY/2],
-	[		 weftSpacingX/2, 	0],
-	[		 weftSpacingX/4,		weftSpacingY/2],
-	[	-1*weftSpacingX/4, 		weftSpacingY/2],
-	[	-1*weftSpacingX/2, 	0],
-];
-var r = weftSpacingX/2;
 
 
-var wefts = [];
-var crossingPoints = [];
-var buttons = [];
 
-var crossingPointsHistory = [];
-var step = 0;
-var layer = 0;
-var zBottomHeight = 0;
-var zTopHeight = 0;
-var zCurrent = 0;
+
+/**
+ * Warps
+ */
+var Warp = function(x, y, use) {
+  this.x = x;
+  this.y = y;
+  this.use = use;
+  this.div = undefined;
+  this.points = [];
+}
+
+Warp.prototype.draw = function() {
+	var obj = this;
+  var div = $('<div></div>')
+    .css('left', this.x+'px')
+    .css('top', this.y+'px')
+    .addClass('warp')
+    .on('click', function() {
+    	obj.toggleUse();
+    });
+  if (this.use) {
+  	div.addClass('use');
+  }
+  if (this.div == undefined) {
+  	$('#pattern').append(div);
+  	this.div = div;
+  }
+  else {
+  	if (use) {
+  		this.div.removeClass('use');
+  	}
+  	else {
+  		this.div.addClass('use');
+  	}	    	
+  }
+}
+
+Warp.prototype.toggleUse = function() {
+	this.use = !this.use;
+	if (this.use) {
+		this.div.addClass('use');
+	}
+	else {
+		this.div.removeClass('use');
+	}
+}
+
+Warp.prototype.hide = function() {
+	this.div.addClass('hidden');
+}
+
+Warp.prototype.generatePoints = function() {
+	//Generate crossing-points - these are the enter and exit points from a "button".
+	for (var i=0; i<6; i++) {
+		var px = this.x + pattern.pointsOffsets[i][0];
+		var py = this.y + pattern.pointsOffsets[i][1];
+		var pointExists = false;
+		for (var j=0; j<pattern.crossingPoints.length; j++) {
+
+			if(pattern.crossingPoints[j].x == px && pattern.crossingPoints[j].y == py) {
+				pointExists = true;
+				pattern.crossingPoints[j].ownerWarps.push(pattern.warps.indexOf(this));
+				this.points.push(pattern.crossingPoints[j]);
+			}
+		}
+		if (!pointExists) {
+			var newPoint = new Point(px, py, this, pattern.crossingPoints.length);
+			newPoint.draw();
+			pattern.crossingPoints.push(newPoint);
+			this.points.push(pattern.crossingPoints[pattern.crossingPoints.length-1]);
+		}
+	}
+}
+
+/**
+ * Points are inbetween warps, weft thread passes through them.
+ */
+var Point = function(x, y, ownerWarp0) {
+	this.x = x;
+	this.y = y;
+	this.ownerWarps = [];
+	this.ownerWarps.push(pattern.warps.indexOf(ownerWarp0));
+	this.div = undefined;
+}
+Point.prototype.draw = function() {
+	var obj = this;
+		var div = $('<a></a>')
+		//TODO: separate spacing in CNC and in browser: calculate CSS positions
+			.css('left', this.x+'px')
+			.css('top', this.y+'px')
+			.addClass('point')
+			.on('click', function() {
+				route(pattern.crossingPointsHistory[pattern.crossingPointsHistory.length-1], obj);
+				pattern.crossingPointsHistory.push(obj);
+			});
+		$('#pattern').append(div);
+		this.div = div;
+}
+
+
 
 $(function() {
-
-	function Point(x, y, ownerWeft0) {
-		this.x = x;
-		this.y = y;
-		this.ownerWefts = [];
-		this.ownerWefts.push(wefts.indexOf(ownerWeft0));
-		this.div = undefined;
-		this.draw = function() {
-			var obj = this;
-			var div = $('<a></a>')
-			//TODO: separate spacing in CNC and in browser: calculate CSS positions
-				.css('left', this.x+'px')
-				.css('top', this.y+'px')
-				.addClass('point')
-				.on('click', function() {
-					route(crossingPointsHistory[crossingPointsHistory.length-1], obj);
-					crossingPointsHistory.push(obj);
-				});
-			$('#pattern').append(div);
-			this.div = div;
-		}
-	}
-
-	function Weft(x, y, use) {
-	  this.x = x;
-	  this.y = y;
-	  this.use = use;
-	  this.div = undefined;
-	  this.draw = function() {
-	  	var obj = this;
-	    var div = $('<div></div>')
-		    .css('left', x+'px')
-		    .css('top', y+'px')
-		    .addClass('weft')
-		    .on('click', function() {
-		    	obj.toggleUse();
-		    });
-	    if (use) {
-	    	div.addClass('use');
-	    }
-	    if (this.div == undefined) {
-	    	$('#pattern').append(div);
-	    	this.div = div;
-	    }
-	    else {
-	    	if (use) {
-	    		this.div.removeClass('use');
-	    	}
-	    	else {
-	    		this.div.addClass('use');
-	    	}	    	
-	    }
-	  }
-	  this.toggleUse = function() {
-	  	this.use = !this.use;
-	  	if (this.use) {
-	  		this.div.addClass('use');
-	  	}
-	  	else {
-	  		this.div.removeClass('use');
-	  	}
-	  }
-	  this.hide = function() {
-	  	this.div.addClass('hidden');
-	  }
-	  this.points = [];
-	  this.generatePoints = function() {
-	  	//Generate crossing-points - these are the enter and exit points from a "button".
-	  	for (var i=0; i<6; i++) {
-	  		var px = this.x + pointsOffsets[i][0];
-	  		var py = this.y + pointsOffsets[i][1];
-	  		var pointExists = false;
-	  		for (var j=0; j<crossingPoints.length; j++) {
-
-	  			if(crossingPoints[j].x == px && crossingPoints[j].y == py) {
-	  				pointExists = true;
-	  				crossingPoints[j].ownerWefts.push(wefts.indexOf(this));
-	  				this.points.push(crossingPoints[j]);
-	  			}
-	  		}
-				if (!pointExists) {
-					var newPoint = new Point(px, py, this, crossingPoints.length);
-					newPoint.draw();
-					crossingPoints.push(newPoint);
-					this.points.push(crossingPoints[crossingPoints.length-1]);
-				}
-	  	}
-			
-	  }
-
-	}
-
-	//Generate possible wefts grid
-	for (var i=0; i<noOfWeftsY; i++) {
+	//Generate possible warps grid
+	for (var i=0; i<pattern.noOfWarpsY; i++) {
 		var rowOffsetX = 0;
 		if (i%2!=0) {
-			rowOffsetX = weftSpacingX/2;
+			rowOffsetX = pattern.warpSpacingX/2;
 		}
-		for (var j=0; j<noOfWeftsX; j++) {
-			var weftSlot = new Weft (
-				weftSpacingX + weftSpacingX/2 + j * weftSpacingX + rowOffsetX,
-				weftSpacingX + weftSpacingX/2 + i * weftSpacingY,
+		for (var j=0; j<pattern.noOfWarpsX; j++) {
+			var warpSlot = new Warp (
+				pattern.warpSpacingX + pattern.warpSpacingX/2 + j * pattern.warpSpacingX + rowOffsetX,
+				pattern.warpSpacingX + pattern.warpSpacingX/2 + i * pattern.warpSpacingY,
 				false
 			);
-			weftSlot.draw();
-			wefts.push(weftSlot);
+			warpSlot.draw();
+			pattern.warps.push(warpSlot);
 		}
 	}
 
-	var canvasWidth = (2*weftSpacingX + weftSpacingX/2 + j * weftSpacingX + rowOffsetX) +'px';
-	var canvasHeight = (2*weftSpacingX + weftSpacingX/2 + i * weftSpacingY) +'px';
+	var canvasWidth = (2*pattern.warpSpacingX + pattern.warpSpacingX/2 + j * pattern.warpSpacingX + rowOffsetX) +'px';
+	var canvasHeight = (2*pattern.warpSpacingX + pattern.warpSpacingX/2 + i * pattern.warpSpacingY) +'px';
 	$("#pattern")
 		.css('width', canvasWidth)
 		.css('height', canvasHeight);
@@ -147,24 +161,24 @@ $(function() {
 
 
 
-	//"Wefts done" button
-	$('#endWefting').on('click', function() {
-		$('#pattern').removeClass('prewefting');
-		for(var i=0; i<wefts.length; i++) {
-			wefts[i].div.off('click');
-			if (!wefts[i].use) {
-				wefts[i].div.hide();
+	//"Warps done" button
+	$('#endWarping').on('click', function() {
+		$('#pattern').removeClass('prewarping');
+		for(var i=0; i<pattern.warps.length; i++) {
+			pattern.warps[i].div.off('click');
+			if (!pattern.warps[i].use) {
+				pattern.warps[i].div.hide();
 			}
 			else {
-				wefts[i].generatePoints();
+				pattern.warps[i].generatePoints();
 			}
 		}
-		crossingPointsHistory.push(crossingPoints[0]);
+		pattern.crossingPointsHistory.push(pattern.crossingPoints[0]);
 
-		crossingPoints[0].div.addClass('start');
+		pattern.crossingPoints[0].div.addClass('start');
 
 		$('#undo').show().on('click', ctrlZ);
-		$('#prewefting-instruction').hide();
+		$('#prewarping-instruction').hide();
 		$('#weaving-instruction').show();
 		$(this).hide();
 	});
@@ -177,20 +191,20 @@ $(function() {
 });
 
 function route(point1, point2) {
-	step++;
-	var commonWeft = undefined;
-	for (var i=0; i<point1.ownerWefts.length; i++) {
-		for (var j=0; j<point2.ownerWefts.length; j++) {
-			if (point1.ownerWefts[i] == point2.ownerWefts[j]) {
-				commonWeft = point1.ownerWefts[i];
+	pattern.step++;
+	var commonWarp = undefined;
+	for (var i=0; i<point1.ownerWarps.length; i++) {
+		for (var j=0; j<point2.ownerWarps.length; j++) {
+			if (point1.ownerWarps[i] == point2.ownerWarps[j]) {
+				commonWarp = point1.ownerWarps[i];
 				break;
 			}
 		}
 	}
-	if (commonWeft != undefined) {
+	if (commonWarp != undefined) {
 		$('#gcode').html($('#gcode').html() + gcodeZ('arc', point1, point2));
-		$('#gcode').html($('#gcode').html() + gcodeArc(point1, point2, commonWeft));
-		drawSvgArc(point1, point2, commonWeft);
+		$('#gcode').html($('#gcode').html() + gcodeArc(point1, point2, commonWarp));
+		drawSvgArc(point1, point2, commonWarp);
 	}
 	else {
 		$('#gcode').html($('#gcode').html() + gcodeZ('line', point1, point2));
@@ -202,23 +216,23 @@ function route(point1, point2) {
 function gcodeZ(type, point1, point2) {
 	//TODO line-type specific stuff
 	var subLayersInPoint = 0;
-	for (var i=0; i<crossingPointsHistory.length; i++) {
-		if (crossingPointsHistory[i].x == point2.x && crossingPointsHistory[i].y == point2.y) {
+	for (var i=0; i<pattern.crossingPointsHistory.length; i++) {
+		if (pattern.crossingPointsHistory[i].x == point2.x && pattern.crossingPointsHistory[i].y == point2.y) {
 			subLayersInPoint++;
 		}
 	}
-	zCurrent = zBottomHeight + subLayersInPoint*layerHeight;
-	return ';'+step+' \nG00 X' +  point1.x + ' Y' + point1.y + ' Z'+zCurrent+' \n';
+	pattern.zCurrent = pattern.zBottomHeight + subLayersInPoint*pattern.layerHeight;
+	return ';'+pattern.step+' \nG00 X' +  point1.x + ' Y' + point1.y + ' Z'+pattern.zCurrent+' \n';
 }
 
 function gcodeLine(point1, point2) {
-	return 'G00 X' +  point2.x + ' Y' + point2.y + ' Z'+zCurrent+' \n';
+	return 'G00 X' +  point2.x + ' Y' + point2.y + ' Z'+pattern.zCurrent+' \n';
 	//G00 X#.#### Y#.#### Z#.#### //maximum feed rate
 	//G01 X#.#### Y#.#### Z.#.#### F#.####
 }
 
-function gcodeArc(point1, point2, commonWeftIndex) {
-	var direction = arcDirection(point1, point2, commonWeftIndex);
+function gcodeArc(point1, point2, commonWarpIndex) {
+	var direction = arcDirection(point1, point2, commonWarpIndex);
 	console.log('G-code arc direction: '+ direction);
 	var result = 'G';
 	if (direction=='cw') {
@@ -229,8 +243,8 @@ function gcodeArc(point1, point2, commonWeftIndex) {
 	}
 	result += ('X' + point2.x + ' '); 
 	result += ('Y' + point2.y + ' ');
-	result += ('I' + (wefts[commonWeftIndex].x - point1.x) + ' ');
-	result += ('J' + (wefts[commonWeftIndex].y - point1.y) + ' \n');
+	result += ('I' + (pattern.warps[commonWarpIndex].x - point1.x) + ' ');
+	result += ('J' + (pattern.warps[commonWarpIndex].y - point1.y) + ' \n');
 	//result += 'F#';//F feed rate ... (inch/min)
 	return result;
 }
@@ -243,7 +257,7 @@ function drawSvgLine(point1, point2) {
   	y2: point2.y,
     'stroke': 'rgba(255,255,255,0.85)', 
     'stroke-width': 8,
- 	  'id': 'pathshadow'+step
+ 	  'id': 'pathshadow'+pattern.step
  	});
  	document.getElementById('layerWeaves').appendChild(line);
   line = makeSVG('line', {
@@ -253,34 +267,34 @@ function drawSvgLine(point1, point2) {
   	y2: point2.y,
     stroke: '#ff3300', 
     'stroke-width': 2,
-    'id': 'path'+step
+    'id': 'path'+pattern.step
   });
   document.getElementById('layerWeaves').appendChild(line);
 }
 
-function drawSvgArc(point1, point2, commonWeftIndex) {
-	var direction = arcDirection(point1, point2, commonWeftIndex);
+function drawSvgArc(point1, point2, commonWarpIndex) {
+	var direction = arcDirection(point1, point2, commonWarpIndex);
 	console.log('SVG arc direction: '+ direction);
 	var flag = 0;
 	if (direction == 'cw') {
 		flag = 1;
 	}
 	//First path is a "shadow"
-	var path = 'M '+point1.x+' '+point1.y+' A '+r+' '+r+' 0 0'+ flag+' '+point2.x+' '+point2.y;
+	var path = 'M '+point1.x+' '+point1.y+' A '+pattern.r+' '+pattern.r+' 0 0'+ flag+' '+point2.x+' '+point2.y;
   var arc = makeSVG('path', {d: path,
    'stroke': 'rgba(255,255,255,0.85)', 
    'stroke-width': 8, 
    'fill': 'transparent',
-   'id': 'pathshadow'+step
+   'id': 'pathshadow'+pattern.step
   });
   document.getElementById('layerWeaves').appendChild(arc);
   //Second path is colored line
-  path = 'M '+point1.x+' '+point1.y+' A '+r+' '+r+' 0 0'+ flag+' '+point2.x+' '+point2.y;
+  path = 'M '+point1.x+' '+point1.y+' A '+pattern.r+' '+pattern.r+' 0 0'+ flag+' '+point2.x+' '+point2.y;
   arc = makeSVG('path', {d: path,
     'stroke': '#ff3300', 
     'stroke-width': 2, 
     'fill': 'transparent',
-    'id': 'path'+step
+    'id': 'path'+pattern.step
   });
   document.getElementById('layerWeaves').appendChild(arc);
 }
@@ -293,13 +307,13 @@ function makeSVG(tag, attrs) { //http://stackoverflow.com/questions/3642035/jque
   return el;
 }
 
-function arcDirection(point1, point2, commonWeftIndex) {
+function arcDirection(point1, point2, commonWarpIndex) {
 	for (var i=0; i<6; i++) {
 		var point1index, point2index;
-		if (wefts[commonWeftIndex].points[i] == point1) {
+		if (pattern.warps[commonWarpIndex].points[i] == point1) {
 			point1index = i;
 		}
-		else if (wefts[commonWeftIndex].points[i] == point2) {
+		else if (pattern.warps[commonWarpIndex].points[i] == point2) {
 			point2index = i;
 		}
 	}
@@ -331,8 +345,8 @@ function ctrlZ() {
 	  return;
 	}
 	$('#gcode').html(gcode);
-	document.getElementById('layerWeaves').removeChild(document.getElementById('pathshadow'+step));
-	document.getElementById('layerWeaves').removeChild(document.getElementById('path'+step));
-	step--;
-	crossingPointsHistory.pop();
+	document.getElementById('layerWeaves').removeChild(document.getElementById('pathshadow'+pattern.step));
+	document.getElementById('layerWeaves').removeChild(document.getElementById('path'+pattern.step));
+	pattern.step--;
+	pattern.crossingPointsHistory.pop();
 }

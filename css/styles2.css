@@ -8,14 +8,6 @@ body {
     -o-background-size: cover;
     background-size: cover;
 	}
-.clear {}
-#buttons {}
-#pattern {}
-.weft {}
-.weft {}
-.prewefting .weft.use {}
-.weft.hidden {}
-.point {}
 
 
 textarea#gcode {
@@ -79,7 +71,7 @@ h3 {color:#fff;}
 
 
 
-#buttons button#endWefting, #buttons button#undo {
+#buttons button#endWarping, #buttons button#undo {
   background: #eb8900;
   background-image: -webkit-linear-gradient(top, #eb8900, #d74700);
   background-image: -moz-linear-gradient(top, #eb8900, #d74700);
@@ -102,11 +94,11 @@ h3 {color:#fff;}
 	  text-shadow: 1px 0px 3px #190900;
 		}
 		
-#buttons button#endWefting:focus, #buttons button#undo:focus {
+#buttons button#endWarping:focus, #buttons button#undo:focus {
 	outline: none !important;
 }
 
-#buttons button#endWefting:hover, #buttons button#undo:hover {
+#buttons button#endWarping:hover, #buttons button#undo:hover {
   background: #d74700;
   text-decoration: none;
 }

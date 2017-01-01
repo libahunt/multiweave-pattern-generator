@@ -1,6 +1,7 @@
 var noOfWeftsX = 8;
 var noOfWeftsY = 8;
 var layerHeight = 20;
+//TODO: separate spacing in CNC and in browser
 var weftSpacingX = 60;
 var weftSpacingY = Math.sqrt(Math.pow(weftSpacingX,2) - Math.pow(weftSpacingX/2,2));
 var pointsOffsets = [
@@ -36,6 +37,7 @@ $(function() {
 		this.draw = function() {
 			var obj = this;
 			var div = $('<a></a>')
+			//TODO: separate spacing in CNC and in browser: calculate CSS positions
 				.css('left', this.x+'px')
 				.css('top', this.y+'px')
 				.addClass('point')
@@ -217,12 +219,13 @@ function gcodeLine(point1, point2) {
 
 function gcodeArc(point1, point2, commonWeftIndex) {
 	var direction = arcDirection(point1, point2, commonWeftIndex);
+	console.log('G-code arc direction: '+ direction);
 	var result = 'G';
 	if (direction=='cw') {
-		result += '02 ';
+		result += '03 ';//cw direction of canvas coordinates is ccw direction in the mirrored cnc coordinates
 	}
 	else {
-		result += '03 ';
+		result += '02 ';//ccw direction of canvas coordinates is cw direction in the mirrored cnc coordinates
 	}
 	result += ('X' + point2.x + ' '); 
 	result += ('Y' + point2.y + ' ');
@@ -255,8 +258,9 @@ function drawSvgLine(point1, point2) {
   document.getElementById('layerWeaves').appendChild(line);
 }
 
-function drawSvgArc(point1, point2, commonWeft) {
-	var direction = arcDirection(point1, point2, commonWeft);
+function drawSvgArc(point1, point2, commonWeftIndex) {
+	var direction = arcDirection(point1, point2, commonWeftIndex);
+	console.log('SVG arc direction: '+ direction);
 	var flag = 0;
 	if (direction == 'cw') {
 		flag = 1;
@@ -299,17 +303,21 @@ function arcDirection(point1, point2, commonWeftIndex) {
 			point2index = i;
 		}
 	}
-	if (point1index==5 && point2index==0) {
-		return 'cw';
-	}
-	else if (point1index==0 && point2index==5) {
-		return 'ccw';
-	}
-	else if (point1index<point2index) {
-		return 'cw';
+	if (point1index-point2index > 0) {
+		if (point1index-point2index <= 2) {
+			return 'ccw';
+		}
+		else {
+			return 'cw';
+		}
 	}
 	else {
-		return 'ccw';
+		if(point1index-point2index >= -2) {
+			return 'cw';
+		}
+		else {
+			return 'ccw';
+		}
 	}
 }
 

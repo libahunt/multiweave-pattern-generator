@@ -50,6 +50,11 @@ var Pattern = function() {
 			[	-1*spacingX/2, 	0],
 		];
 	}
+
+	this.startPoint = new Point(this.edgeLeft/2, this.edgeBottom/2, null);
+  this.crossingPointsHistory.push(this.startPoint);
+	this.startPoint.draw();
+	this.startPoint.div.addClass('start');
 }
 
 
@@ -151,6 +156,9 @@ Point.prototype.draw = function() {
 		.css('top', this.y+'px')
 		.addClass('point')
 		.on('click', function() {
+			if (pattern.step == 0) {
+				$('.point.start').off('click');
+			}
 			route(pattern.crossingPointsHistory[pattern.crossingPointsHistory.length-1], obj);
 			pattern.crossingPointsHistory.push(obj);
 		});
@@ -166,6 +174,7 @@ $(function() {
 
 	//Initialize pattern object
 	pattern = new Pattern();
+
 	//TODO: when save functionality gets created, load pattern from json
 
 
@@ -214,9 +223,6 @@ $(function() {
 				pattern.warps[i].generatePoints(pattern);
 			}
 		}
-		//TODO: Make starting point choosable
-		pattern.crossingPointsHistory.push(pattern.crossingPoints[0]);
-		pattern.crossingPoints[0].div.addClass('start');
 
 		//Show buttons and instructions that are relevant in wefting phase
 		$('#undo').show().on('click', ctrlZ);

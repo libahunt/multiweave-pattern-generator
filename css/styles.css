@@ -78,6 +78,13 @@ body {
 	top: -12px;
 	right: 0;
 }
+.point.start,
+.point.start:hover {
+	background: transparent;
+}
+.prewarping .point {
+	display: none;/*hide start point that exists before others*/
+}
 
 .explanation {
 	color: #bbbbbb;

@@ -1,3 +1,5 @@
+var pattern;
+
 var Pattern = function() {
 	//Pattern size as number of warps in a row and number of zig-zag shifted rows
 	this.noOfWarpsX = 12;
@@ -51,7 +53,7 @@ var Pattern = function() {
 		];
 	}
 
-	this.startPoint = new Point(this.edgeLeft/2, this.edgeBottom/2, null);
+	this.startPoint = new Point(this.edgeLeft/2, this.canvasHeight-this.edgeBottom/2, null, this);
   this.crossingPointsHistory.push(this.startPoint);
 	this.startPoint.draw();
 	this.startPoint.div.addClass('start');
@@ -65,7 +67,7 @@ var Pattern = function() {
  */
 var Warp = function(x, y, use) {
 	this.gx = x/pattern.coef;
-  this.gy = y/pattern.coef;
+  this.gy = pattern.boardHeight - y/pattern.coef;
   this.x = x;
   this.y = y;
   this.use = use;
@@ -129,7 +131,7 @@ Warp.prototype.generatePoints = function(pattern) {
 			}
 		}
 		if (!pointExists) {
-			var newPoint = new Point(x, y, this);
+			var newPoint = new Point(x, y, this, pattern);
 			newPoint.draw();
 			pattern.crossingPoints.push(newPoint);
 			this.points.push(pattern.crossingPoints[pattern.crossingPoints.length-1]);
@@ -140,11 +142,11 @@ Warp.prototype.generatePoints = function(pattern) {
 /**
  * Points are inbetween warps, weft thread passes through them.
  */
-var Point = function(x, y, ownerWarp0) {
+var Point = function(x, y, ownerWarp0, pattern) {
 	this.x = x;
 	this.y = y;
-	this.gx = x;
-	this.gy = y;
+	this.gx = x/pattern.coef;
+	this.gy = pattern.boardHeight - y/pattern.coef;
 	this.ownerWarps = [ownerWarp0];
 	this.div = undefined;
 }
@@ -167,7 +169,7 @@ Point.prototype.draw = function() {
 }
 
 
-var pattern;
+
 
 
 $(function() {
@@ -272,7 +274,7 @@ function gcodeZ(type, point1, point2) {
 }*/
 
 function gcodeLine(point1, point2) {
-	return  ';'+pattern.step+' \nG00 X' +  point2.x + ' Y' + point2.y + ' Z'+pattern.zCurrent+' \n';
+	return  ';'+pattern.step+' \nG00 X' +  point2.gx + ' Y' + point2.gy + ' Z'+pattern.zCurrent+' \n';
 	//G00 X#.#### Y#.#### Z#.#### //maximum feed rate
 	//G01 X#.#### Y#.#### Z.#.#### F#.####
 }
@@ -281,15 +283,15 @@ function gcodeArc(point1, point2, commonWarp) {
 	var direction = arcDirection(point1, point2, commonWarp);
 	var result = ';'+pattern.step+' \nG';
 	if (direction=='cw') {
-		result += '03 ';//cw direction of canvas coordinates is ccw direction in the mirrored cnc coordinates
+		result += '02 ';
 	}
 	else {
-		result += '02 ';//ccw direction of canvas coordinates is cw direction in the mirrored cnc coordinates
+		result += '03 ';
 	}
-	result += ('X' + point2.x + ' '); 
-	result += ('Y' + point2.y + ' ');
-	result += ('I' + (commonWarp.x - point1.x) + ' ');
-	result += ('J' + (commonWarp.y - point1.y) + ' \n');
+	result += ('X' + point2.gx + ' '); 
+	result += ('Y' + point2.gy + ' ');
+	result += ('I' + (commonWarp.gx - point1.gx) + ' ');
+	result += ('J' + (commonWarp.gy - point1.gy) + ' \n');
 	//result += 'F#';//F feed rate ... (inch/min)
 	return result;
 }

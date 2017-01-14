@@ -1,4 +1,3 @@
-var pattern;
 
 var Pattern = function() {
 	//Pattern size as number of warps in a row and number of zig-zag shifted rows
@@ -30,7 +29,9 @@ var Pattern = function() {
   this.crossingPoints = [];
 
   //Array to save all chosen points, this allows to take back some part of path.
-  this.crossingPointsHistory = [];
+  this.crossingPointsHistory = [[]]; //array for each layer
+  //Element will hold the point object that was crossed and the step number
+
   //Keep track of creation step (each clicked point is a step)
   this.step = 0;
   //Keep track of current layer
@@ -54,7 +55,7 @@ var Pattern = function() {
 	}
 
 	this.startPoint = new Point(this.edgeLeft/2, this.canvasHeight-this.edgeBottom/2, null, this);
-  this.crossingPointsHistory.push(this.startPoint);
+  this.crossingPointsHistory[0].push([this.startPoint, 0]);
 	this.startPoint.draw();
 	this.startPoint.div.addClass('start');
 }
@@ -161,8 +162,10 @@ Point.prototype.draw = function() {
 			if (pattern.step == 0) {
 				$('.point.start').off('click');
 			}
-			route(pattern.crossingPointsHistory[pattern.crossingPointsHistory.length-1], obj);
-			pattern.crossingPointsHistory.push(obj);
+			route(
+				pattern.crossingPointsHistory[pattern.layer][pattern.crossingPointsHistory[pattern.layer].length-1][0], 
+				obj
+			);
 		});
 	$('#pattern').append(div);
 	this.div = div;
@@ -239,6 +242,7 @@ $(function() {
 
 function route(point1, point2) {
 	pattern.step++;
+	//Find out if points have an owner warp in common
 	var commonWarp = undefined;
 	for (var i=0; i<point1.ownerWarps.length; i++) {
 		for (var j=0; j<point2.ownerWarps.length; j++) {
@@ -248,16 +252,30 @@ function route(point1, point2) {
 			}
 		}
 	}
+
+	//Points have a warp in common, the path will be arc
 	if (commonWarp != undefined) {
+		//Get the direction of arc - works reliably if arch is 1 or 2 point distances long
+		var arcProps = arcProperties(point1, point2, commonWarp);
+		
 		//$('#gcode').html($('#gcode').html() + gcodeZ('arc', point1, point2));
-		$('#gcode').html($('#gcode').html() + gcodeArc(point1, point2, commonWarp));
-		drawSvgArc(point1, point2, commonWarp);
+		$('#gcode').html($('#gcode').html() + gcodeArc(point1, point2, commonWarp, arcProps.direction));
+		drawSvgArc(point1, point2, commonWarp, arcProps.direction);
+
+		for (var i=0; i<arcProps.extraPoints.length; i++) {
+			pattern.crossingPointsHistory[pattern.layer].push([arcProps.extraPoints[i], pattern.step]);
+		}
+		pattern.crossingPointsHistory[pattern.layer].push([point2, pattern.step]);
 	}
+
+	//Points don't have a common warp, the path will be straight line
 	else {
 		//$('#gcode').html($('#gcode').html() + gcodeZ('line', point1, point2));
 		$('#gcode').html($('#gcode').html() + gcodeLine(point1, point2));
 		drawSvgLine(point1, point2);
+		pattern.crossingPointsHistory[pattern.layer].push([point2, pattern.step]);
 	}
+
 }
 
 /*Integrate Z movements into arc and line functions
@@ -279,8 +297,7 @@ function gcodeLine(point1, point2) {
 	//G01 X#.#### Y#.#### Z.#.#### F#.####
 }
 
-function gcodeArc(point1, point2, commonWarp) {
-	var direction = arcDirection(point1, point2, commonWarp);
+function gcodeArc(point1, point2, commonWarp, direction) {
 	var result = ';'+pattern.step+' \nG';
 	if (direction=='cw') {
 		result += '02 ';
@@ -319,8 +336,7 @@ function drawSvgLine(point1, point2) {
   document.getElementById('layerWeaves').appendChild(line);
 }
 
-function drawSvgArc(point1, point2, commonWarp) {
-	var direction = arcDirection(point1, point2, commonWarp);
+function drawSvgArc(point1, point2, commonWarp, direction) {
 	var flag = 0;
 	if (direction == 'cw') {
 		flag = 1;
@@ -353,7 +369,8 @@ function makeSVG(tag, attrs) { //http://stackoverflow.com/questions/3642035/jque
   return el;
 }
 
-function arcDirection(point1, point2, commonWarp) {
+function arcProperties(point1, point2, commonWarp) {
+	var direction;
 	for (var i=0; i<6; i++) {
 		var point1index, point2index;
 		if (commonWarp.points[i] == point1) {
@@ -365,20 +382,47 @@ function arcDirection(point1, point2, commonWarp) {
 	}
 	if (point1index-point2index > 0) {
 		if (point1index-point2index <= 2) {
-			return 'ccw';
+			direction = 'ccw';
 		}
 		else {
-			return 'cw';
+			direction = 'cw';
 		}
 	}
 	else {
 		if(point1index-point2index >= -2) {
-			return 'cw';
+			direction = 'cw';
 		}
 		else {
-			return 'ccw';
+			direction = 'ccw';
 		}
 	}
+	var extraPoints = [];
+	var nextP = nextPoint(point1, commonWarp, direction);
+	if (nextP != point2) { //next point is not yet destination
+		extraPoints.push(nextP);//add to array
+		//and check for one more point
+		nextP = nextPoint(nextP, commonWarp, direction);
+		if (nextP != point2) {
+			extraPoints.push(nextP);
+		};
+	};
+	return {
+		'direction': direction,
+		'extraPoints': extraPoints
+	};
+}
+
+function nextPoint(point, commonWarp, direction) {
+	var pointIndex;
+	if (direction == 'cw') {
+		pointIndex = commonWarp.points.indexOf(point) + 1;
+		if (pointIndex == 6) pointIndex = 0;
+	}
+	else {
+		pointIndex = commonWarp.points.indexOf(point) - 1;
+		if (pointIndex == -1) pointIndex = 5;
+	}
+	return commonWarp.points[pointIndex];
 }
 
 function ctrlZ() {
@@ -393,6 +437,8 @@ function ctrlZ() {
 	$('#gcode').html(gcode);
 	document.getElementById('layerWeaves').removeChild(document.getElementById('pathshadow'+pattern.step));
 	document.getElementById('layerWeaves').removeChild(document.getElementById('path'+pattern.step));
+	while (pattern.crossingPointsHistory[pattern.layer][ pattern.crossingPointsHistory[pattern.layer].length-1 ][1] == pattern.step) {
+		pattern.crossingPointsHistory[pattern.layer].pop();
+	}
 	pattern.step--;
-	pattern.crossingPointsHistory.pop();
 }

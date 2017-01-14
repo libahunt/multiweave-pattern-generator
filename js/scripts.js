@@ -60,6 +60,10 @@ var Pattern = function() {
 	this.startPoint.div.addClass('start');
 }
 
+Pattern.prototype.lastPoint = function() {
+	return this.crossingPointsHistory[this.crossingPointsHistory.length-1][this.crossingPointsHistory[this.crossingPointsHistory.length-1].length-1];
+};
+
 
 
 
@@ -163,7 +167,7 @@ Point.prototype.draw = function() {
 				$('.point.start').off('click');
 			}
 			route(
-				pattern.crossingPointsHistory[pattern.layer][pattern.crossingPointsHistory[pattern.layer].length-1][0], 
+				pattern.lastPoint()[0],
 				obj
 			);
 		});
@@ -236,11 +240,35 @@ $(function() {
 		$(this).hide();
 	});
 
+	/**
+	 * "New layer" button
+	 */
+	$('#newLayer').on('click', function() {
+		pattern.layer++;
+		pattern.step++;
+		pattern.crossingPointsHistory.push([pattern.lastPoint()]);
+		$('.layer'+(pattern.layer-1)).each(function() {
+			$(this).attr('stroke-opacity','0.3');
+
+		});
+		$('.layer'+(pattern.layer-2)).each(function() {
+			$(this).attr('stroke-opacity','0.08');
+		});
+	});
+
 
 });
 
-
+/**
+ * Takes two point objects as parameters and routes the path from first to second.
+ * Decides if the path is straight or arc. 
+ * Decides z-height for the movement.
+ * Generates g-code.
+ * Draws SVG lines.
+ * Updates all related objects.
+ */
 function route(point1, point2) {
+
 	pattern.step++;
 	//Find out if points have an owner warp in common
 	var commonWarp = undefined;
@@ -321,7 +349,8 @@ function drawSvgLine(point1, point2) {
   	y2: point2.y,
     'stroke': 'rgba(255,255,255,0.85)', 
     'stroke-width': 8,
- 	  'id': 'pathshadow'+pattern.step
+ 	  'id': 'pathshadow'+pattern.step,
+    'class': 'layer'+pattern.layer
  	});
  	document.getElementById('layerWeaves').appendChild(line);
   line = makeSVG('line', {
@@ -331,7 +360,8 @@ function drawSvgLine(point1, point2) {
   	y2: point2.y,
     stroke: '#ff3300', 
     'stroke-width': 2,
-    'id': 'path'+pattern.step
+    'id': 'path'+pattern.step,
+    'class': 'layer'+pattern.layer
   });
   document.getElementById('layerWeaves').appendChild(line);
 }
@@ -344,10 +374,11 @@ function drawSvgArc(point1, point2, commonWarp, direction) {
 	//First path is a "shadow"
 	var path = 'M '+point1.x+' '+point1.y+' A '+pattern.r+' '+pattern.r+' 0 0'+ flag+' '+point2.x+' '+point2.y;
   var arc = makeSVG('path', {d: path,
-   'stroke': 'rgba(255,255,255,0.85)', 
-   'stroke-width': 8, 
-   'fill': 'transparent',
-   'id': 'pathshadow'+pattern.step
+    'stroke': 'rgba(255,255,255,0.85)', 
+    'stroke-width': 8, 
+    'fill': 'transparent',
+    'id': 'pathshadow'+pattern.step,
+    'class': 'layer'+pattern.layer
   });
   document.getElementById('layerWeaves').appendChild(arc);
   //Second path is colored line
@@ -356,7 +387,8 @@ function drawSvgArc(point1, point2, commonWarp, direction) {
     'stroke': '#ff3300', 
     'stroke-width': 2, 
     'fill': 'transparent',
-    'id': 'path'+pattern.step
+    'id': 'path'+pattern.step,
+    'class': 'layer'+pattern.layer
   });
   document.getElementById('layerWeaves').appendChild(arc);
 }
@@ -434,11 +466,23 @@ function ctrlZ() {
 	  alert("Can't undo");
 	  return;
 	}
+	var hadThisLayerSteps = false;
+	try {
+    while (pattern.crossingPointsHistory[pattern.layer][ pattern.crossingPointsHistory[pattern.layer].length-1 ][1] == pattern.step) {
+			pattern.crossingPointsHistory[pattern.layer].pop();
+			hadThisLayerSteps = true;
+		}
+	}
+	catch(err) {
+	  alert("Can't undo");
+	  return;
+	}
+	if (!hadThisLayerSteps) {
+		alert("Can't undo");
+	  return;
+	}
 	$('#gcode').html(gcode);
 	document.getElementById('layerWeaves').removeChild(document.getElementById('pathshadow'+pattern.step));
 	document.getElementById('layerWeaves').removeChild(document.getElementById('path'+pattern.step));
-	while (pattern.crossingPointsHistory[pattern.layer][ pattern.crossingPointsHistory[pattern.layer].length-1 ][1] == pattern.step) {
-		pattern.crossingPointsHistory[pattern.layer].pop();
-	}
 	pattern.step--;
 }

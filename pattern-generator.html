@@ -1,0 +1,75 @@
+<!doctype html>
+
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+
+  <title>MultiWeave generator</title>
+  <meta name="description" content="MultiWeave 3D weaving machine g-code generator">
+  <meta name="author" content="">
+
+  <link rel="stylesheet" href="css/styles.css?v=1.0">
+  <link rel="stylesheet" href="css/styles2.css?v=1.0">
+  <link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
+
+  <!--[if lt IE 9]>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv.js"></script>
+  <![endif]-->
+</head>
+
+<body>
+	
+	<div id="work-area">
+		<div id="top-buttons">
+			<button id="endWarping">Warping done</button>
+			<button id="undo" style="display: none;">Undo</button>
+			<button id="newLayer" style="display: none;">New layer</button>
+			<div class="clear"></div>
+			
+		</div>
+
+		<div id="pattern-wrapper">
+			<div id="pattern" class="prewarping">
+				<svg id="layerWeaves"></svg>
+			</div>
+		</div>
+
+		<div class="clear"></div>
+
+		<button id="save" disabled="disabled" style="display: none;">Save</button>
+
+		<div class="clear"></div>
+	</div>
+
+	<div id="instructions">
+		<h1><span class="multi">Multi</span><span class="weave">Weave</span></h1>
+		<br>
+		<p id="prewarping-instruction">The view shows the "cross-section" of fabric.<br>
+			These circles are possible positions for tubes that hold warp yarns upright. Choose the warps that you wish to use. Then click "Warping done".</p>
+		<p id="weaving-instruction" style="display: none;">Gray circles are warps that you chose. <br>
+			Click on the red dots to choose path for the weft thread. Thread starts from bottom left corner.<br>
+			You can use "Undo" button if the line bumps into a tube or if the result does not look like you wanted it. Right now you can't undo more than til the beginning of current layer, so recheck your work before you start new layer.<br>
+			When you need to pass same point for 3rd or 4th time, then it's logical to create new layer. Previous layers will remain visible in lighter color.<br>
+			<br>
+			G-code for the CNC machine is generated into the box below.</p>
+	</div>
+
+	<div class="clear"></div>
+		
+	<div id="gcode-wrapper" style="display: none;">
+		<h3>G-code</h3>
+		<textarea id="gcode"></textarea>
+		<h3 style="display: none;">Plot data</h3>
+		<textarea id="plot" style="display: none;"></textarea>
+	</div>
+
+	<div class="clear"></div>
+
+	<div id="outro-wrapper">
+
+	</div>
+
+	<script src="js/jquery-3.1.1.min.js"></script>
+  <script src="js/scripts.js"></script>
+</body>
+</html>

@@ -12,18 +12,20 @@ body {
 	height: 1px;
 }
 
-
-#buttons {
-	float: left;
-	width: 250px;
-}
 #pattern {
-	float: left;
 	position: relative;
-	clear: right;
+	clear: both;
 	overflow: hidden;
 	border: 1px solid #cccccc;
-	margin: 0 30px;
+	margin: 0;
+}
+
+#work-area {
+	float: left;
+	margin: 0 20px;
+}
+#instructions {
+	display: inline;
 }
 
 .warp {

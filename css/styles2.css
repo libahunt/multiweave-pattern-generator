@@ -11,15 +11,15 @@ body {
 
 
 textarea#gcode {
-	width: 200px;
-	height: 500px;
+	width: 500px;
+	height: 100px;
 	border: 1px solid #cccccc;
 }
 
 #pattern {
-		background: url(../img/ltr.jpg);
-		border-radius: 10px;
-		margin-top: 20px !important;
+	background: url(../img/ltr.jpg);
+	border-radius: 10px;
+	margin-top: 8px !important;
 }
 
 #layerWeaves {
@@ -27,24 +27,24 @@ textarea#gcode {
 }
 
 #intro-wrapper p {
-			padding: 0px 40px;
-			line-height: 1.7em;
-			text-align: center;
+	padding: 0px 40px;
+	line-height: 1.7em;
+	text-align: center;
 }
 #intro-wrapper {
-		background: url(../img/ltr.png) repeat;
-		border-radius: 10px;
-		padding: 10px 10px;
-		margin-bottom:20px;
+	background: url(../img/ltr.png) repeat;
+	border-radius: 10px;
+	padding: 10px 10px;
+	margin-bottom:20px;
 }
 
 
 
 #buttons {
-		background: url(../img/ltr.png) repeat;
-		border-radius: 10px;
-		padding: 10px 20px;
-		margin-top: 20px !important;
+	background: url(../img/ltr.png) repeat;
+	border-radius: 10px;
+	padding: 10px 20px;
+	margin-top: 20px !important;
 }
 
 #gcode-wrapper h3 {
@@ -52,10 +52,11 @@ textarea#gcode {
 }
 	
 #gcode-wrapper {
-		background: url(../img/ltr.png) repeat;
-		border-radius: 10px;
-		padding: 10px 20px;
-		min-height: 640px;
+	background: url(../img/ltr.png) repeat;
+	border-radius: 10px;
+	padding: 10px 0;
+	width: 540px;
+	margin: 0 auto;
 }
 
 #intro-wrapper h3 {
@@ -70,8 +71,7 @@ h1 .weave {color:#fff !important;}
 h3 {color:#fff;}
 
 
-
-#buttons button#endWarping, #buttons button#undo {
+#goto-pattern-button {
   background: #eb8900;
   background-image: -webkit-linear-gradient(top, #eb8900, #d74700);
   background-image: -moz-linear-gradient(top, #eb8900, #d74700);
@@ -92,13 +92,47 @@ h3 {color:#fff;}
   border: 1px solid #d74700;
       box-shadow: 0px 1px 2px #a78a7c;
 	  text-shadow: 1px 0px 3px #190900;
-		}
+	display: table;
+	width: auto;
+	margin: 20px auto;
+}
+
+button#endWarping, 
+button#undo,
+button#newLayer {
+  background: #eb8900;
+  background-image: -webkit-linear-gradient(top, #eb8900, #d74700);
+  background-image: -moz-linear-gradient(top, #eb8900, #d74700);
+  background-image: -ms-linear-gradient(top, #eb8900, #d74700);
+  background-image: -o-linear-gradient(top, #eb8900, #d74700);
+  background-image: linear-gradient(to bottom, #eb8900, #d74700);
+  -webkit-border-radius: 4;
+  -moz-border-radius: 4;
+  border-radius: 4px;
+  font-family: Arial;
+  color: #ffffff;
+  font-size: 14px;
+  padding: 6px 12px;
+  text-decoration: none;
+  border: 0;
+  cursor: pointer;
+  width: auto;
+  border: 1px solid #d74700;
+  box-shadow: 0px 1px 2px #a78a7c;
+  text-shadow: 1px 0px 3px #190900;
+  float: left;
+}
+button#newLayer {
+	float: right;
+}
 		
-#buttons button#endWarping:focus, #buttons button#undo:focus {
+button#endWarping:focus,
+button#undo:focus {
 	outline: none !important;
 }
 
-#buttons button#endWarping:hover, #buttons button#undo:hover {
+button#endWarping:hover,
+button#undo:hover {
   background: #d74700;
   text-decoration: none;
 }

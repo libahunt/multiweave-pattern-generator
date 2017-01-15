@@ -209,57 +209,27 @@ $(function() {
 	//TODO: if loading existing pattern in wefting state, only create warps that are in use
   
 
-	$("#pattern")
-		.css('width', pattern.canvasWidth)
-		.css('height', pattern.canvasHeight);
-	$("#layerWeaves")
-		.css('width', pattern.canvasWidth)
-		.css('height', pattern.canvasHeight);
+	$("#pattern, #layerWeaves")
+		.css('width', pattern.canvasWidth+ 'px')
+		.css('height', pattern.canvasHeight+ 'px');
+	$("#work-area")
+		.css('width', (pattern.canvasWidth + 2) + 'px');
 
 
 
 	/**
-	 * "Warps done" button
+	 * Buttons
 	 */
-	$('#endWarping').on('click', function() {
-		$('#pattern').removeClass('prewarping');
-		for(var i=0; i<pattern.warps.length; i++) {
-			pattern.warps[i].div.off('click');
-			if (!pattern.warps[i].use) {
-				pattern.warps[i].div.hide();
-			}
-			else {
-				pattern.warps[i].generatePoints(pattern);
-			}
-		}
-
-		//Show buttons and instructions that are relevant in wefting phase
-		$('#undo').show().on('click', ctrlZ);
-		$('#prewarping-instruction').hide();
-		$('#weaving-instruction').show();
-		$(this).hide();
-	});
-
-	/**
-	 * "New layer" button
-	 */
-	$('#newLayer').on('click', function() {
-		pattern.layer++;
-		pattern.step++;
-		pattern.crossingPointsHistory.push([pattern.lastPoint()]);
-		$('.layer'+(pattern.layer-1)).each(function() {
-			$(this).attr('stroke-opacity','0.3');
-
-		});
-		$('.layer'+(pattern.layer-2)).each(function() {
-			$(this).attr('stroke-opacity','0.08');
-		});
-	});
-
+	$('#endWarping').on('click', endWarping);
+	$('#undo').on('click', ctrlZ);
+	$('#newLayer').on('click', newLayer);
 
 });
 
+
+
 /**
+ * route() - clicking on a point calls this function.
  * Takes two point objects as parameters and routes the path from first to second.
  * Decides if the path is straight or arc. 
  * Decides z-height for the movement.
@@ -319,6 +289,9 @@ function gcodeZ(type, point1, point2) {
 	return ';'+pattern.step+' \nG00 X' +  point1.x + ' Y' + point1.y + ' Z'+pattern.zCurrent+' \n';
 }*/
 
+/**
+ * Helper functions for route()
+ */
 function gcodeLine(point1, point2) {
 	return  ';'+pattern.step+' \nG00 X' +  point2.gx + ' Y' + point2.gy + ' Z'+pattern.zCurrent+' \n';
 	//G00 X#.#### Y#.#### Z#.#### //maximum feed rate
@@ -393,7 +366,6 @@ function drawSvgArc(point1, point2, commonWarp, direction) {
   document.getElementById('layerWeaves').appendChild(arc);
 }
 
-
 function makeSVG(tag, attrs) { //http://stackoverflow.com/questions/3642035/jquerys-append-not-working-with-svg-element
   var el= document.createElementNS('http://www.w3.org/2000/svg', tag);
   for (var k in attrs)  
@@ -456,6 +428,58 @@ function nextPoint(point, commonWarp, direction) {
 	}
 	return commonWarp.points[pointIndex];
 }
+
+
+
+/**
+ * "End warping" button functionality
+ */
+
+function endWarping() {
+	//Check which warps were selected for use, generate points to them, remove others
+	for(var i=0; i<pattern.warps.length; i++) {
+		pattern.warps[i].div.off('click');
+		if (!pattern.warps[i].use) {
+			pattern.warps[i].div.remove();
+		}
+		else {
+			pattern.warps[i].generatePoints(pattern);
+		}
+	}
+	//Show buttons and instructions that are relevant in wefting phase
+	$('#pattern').removeClass('prewarping');
+	$('#undo').show();
+	$('#newLayer').show();
+	$('#prewarping-instruction').hide();
+	$('#weaving-instruction').show();
+	$('#gcode-wrapper').show();
+	$(this).hide();
+}
+
+
+
+/**
+ * "New layer" button functionality
+ */
+
+function newLayer() {
+	pattern.layer++;
+	pattern.step++;
+	pattern.crossingPointsHistory.push([pattern.lastPoint()]);
+	$('.layer'+(pattern.layer-1)).each(function() {
+		$(this).attr('stroke-opacity','0.3');
+
+	});
+	$('.layer'+(pattern.layer-2)).each(function() {
+		$(this).attr('stroke-opacity','0.08');
+	});
+}
+
+
+
+/**
+ * "Undo" button functionality
+ */
 
 function ctrlZ() {
 	var gcode = $('#gcode').html();

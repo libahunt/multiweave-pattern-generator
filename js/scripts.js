@@ -11,7 +11,7 @@ var Pattern = function() {
 	this.edgeBottomG = this.warpSpacingGX;
 	this.boardWidth = (this.noOfWarpsX-1) * this.warpSpacingGX + 2.5*this.edgeLeftG;
 	this.boardHeight = (this.noOfWarpsY-1) * this.warpSpacingGY + 2*this.edgeBottomG;
-	this.layerHeight = 15;//TODO: how to decide needed height?
+	this.layerHeight = 5;//TODO: how to decide needed height?
 
 	//Measuremants on browser canvas, px
 	this.warpSpacingX = 60;
@@ -34,13 +34,10 @@ var Pattern = function() {
 
   //Keep track of creation step (each clicked point is a step)
   this.step = 0;
-  //Keep track of current layer
+  //Keep track of current layer number
   this.layer = 0;
-
-  //Keep track of Z thickness in current layer
-  this.zBottomHeight = 0;
-  this.zTopHeight = 0;
-  this.zCurrent = 0;
+  //Keep track of each layer's "base" height. Next layer's possible height is updated on every routing operation.
+  this.layersBottomZs = [0, 0];
 
   //Helper to calculate crossingpoints from warp coordinates
   this.pointsOffsets = function(spacingX, spacingY) {
@@ -62,6 +59,10 @@ var Pattern = function() {
 
 Pattern.prototype.lastPoint = function() {
 	return this.crossingPointsHistory[this.crossingPointsHistory.length-1][this.crossingPointsHistory[this.crossingPointsHistory.length-1].length-1];
+};
+
+Pattern.prototype.currentLayerZ = function() {
+	return this.layersBottomZs[this.layer];
 };
 
 
@@ -152,6 +153,7 @@ var Point = function(x, y, ownerWarp0, pattern) {
 	this.y = y;
 	this.gx = x/pattern.coef;
 	this.gy = pattern.boardHeight - y/pattern.coef;
+	this.gz = 0; //holds the currently topmost weft thread height
 	this.ownerWarps = [ownerWarp0];
 	this.div = undefined;
 }
@@ -251,55 +253,87 @@ function route(point1, point2) {
 		}
 	}
 
+	//First part of finding Z height
+	var Zheight = pattern.currentLayerZ();
+	if (point1.gz > Zheight) Zheight = point1.gz;
+
 	//Points have a warp in common, the path will be arc
 	if (commonWarp != undefined) {
+
 		//Get the direction of arc - works reliably if arch is 1 or 2 point distances long
 		var arcProps = arcProperties(point1, point2, commonWarp);
-		
-		//$('#gcode').html($('#gcode').html() + gcodeZ('arc', point1, point2));
-		$('#gcode').html($('#gcode').html() + gcodeArc(point1, point2, commonWarp, arcProps.direction));
-		drawSvgArc(point1, point2, commonWarp, arcProps.direction);
 
+		//Comparing Z height to other points that the path will cross
+		for (var i=0; i<arcProps.extraPoints.length; i++) {
+			if (arcProps.extraPoints[i].gz + pattern.layerHeight > Zheight) Zheight = arcProps.extraPoints[i].gz + pattern.layerHeight;
+		}
+		if (point2.gz + pattern.layerHeight > Zheight) Zheight = point2.gz + pattern.layerHeight;
+		
+		//Add new points to history array and update each point's Z height
+		point1.gz = Zheight;
 		for (var i=0; i<arcProps.extraPoints.length; i++) {
 			pattern.crossingPointsHistory[pattern.layer].push([arcProps.extraPoints[i], pattern.step]);
+			arcProps.extraPoints[i].gz = Zheight;
 		}
 		pattern.crossingPointsHistory[pattern.layer].push([point2, pattern.step]);
+		if (point2.gz == pattern.currentLayerZ()) point2.gz = pattern.currentLayerZ() + pattern.layerHeight;
+
+		//Generate Gcode
+		$('#gcode').html($('#gcode').html() + 
+			gcodeArc(point1, point2, commonWarp, arcProps.direction, Zheight)
+		);
+
+		//Draw line on screen
+		drawSvgArc(point1, point2, commonWarp, arcProps.direction);
+
 	}
 
 	//Points don't have a common warp, the path will be straight line
 	else {
-		//$('#gcode').html($('#gcode').html() + gcodeZ('line', point1, point2));
-		$('#gcode').html($('#gcode').html() + gcodeLine(point1, point2));
-		drawSvgLine(point1, point2);
+
+		//Compare Z height to end point too
+		if (point2.gz + pattern.layerHeight > Zheight) Zheight = point2.gz + pattern.layerHeight;
+
+		//Update each point's Z height
+		point1.gz = Zheight;
+		if (point2.gz == pattern.currentLayerZ()) point2.gz = pattern.currentLayerZ() + pattern.layerHeight;
+
+		//Add new point to history array
 		pattern.crossingPointsHistory[pattern.layer].push([point2, pattern.step]);
+
+		//Generate Gcode
+		$('#gcode').html($('#gcode').html() + gcodeLine(point1, point2, Zheight));
+
+		//Draw line on screen
+		drawSvgLine(point1, point2);
+	}
+
+	//Keep track of layer's highest point so far, next layer's base will depend on it
+	if (Zheight >= pattern.layersBottomZs[pattern.layer + 1]) {
+		pattern.layersBottomZs[pattern.layer + 1] = Zheight + pattern.layerHeight;
 	}
 
 }
 
-/*Integrate Z movements into arc and line functions
-function gcodeZ(type, point1, point2) {
-	//TODO line-type specific stuff
-	var subLayersInPoint = 0;
-	for (var i=0; i<pattern.crossingPointsHistory.length; i++) {
-		if (pattern.crossingPointsHistory[i].x == point2.x && pattern.crossingPointsHistory[i].y == point2.y) {
-			subLayersInPoint++;
-		}
-	}
-	pattern.zCurrent = pattern.zBottomHeight + subLayersInPoint*pattern.layerHeight;
-	return ';'+pattern.step+' \nG00 X' +  point1.x + ' Y' + point1.y + ' Z'+pattern.zCurrent+' \n';
-}*/
+
+
 
 /**
  * Helper functions for route()
  */
-function gcodeLine(point1, point2) {
-	return  ';'+pattern.step+' \nG00 X' +  point2.gx + ' Y' + point2.gy + ' Z'+pattern.zCurrent+' \n';
+
+function gcodeLine(point1, point2, Zheight) {
+	return  ';'+pattern.step+' \n' +
+		'G00 X' +  point1.gx + ' Y' + point1.gy + ' Z' + Zheight + ' \n' +
+		'G00 X' +  point2.gx + ' Y' + point2.gy + ' Z' + Zheight + ' \n';
 	//G00 X#.#### Y#.#### Z#.#### //maximum feed rate
 	//G01 X#.#### Y#.#### Z.#.#### F#.####
 }
 
-function gcodeArc(point1, point2, commonWarp, direction) {
-	var result = ';'+pattern.step+' \nG';
+function gcodeArc(point1, point2, commonWarp, direction, Zheight) {
+	var result = ';'+pattern.step+' \n' +
+		'G00 X' +  point1.gx + ' Y' + point1.gy + ' Z' + Zheight + ' \n' +
+		'G';
 	if (direction=='cw') {
 		result += '02 ';
 	}
@@ -463,8 +497,8 @@ function endWarping() {
  */
 
 function newLayer() {
-	pattern.layer++;
 	pattern.step++;
+	pattern.layer++;
 	pattern.crossingPointsHistory.push([pattern.lastPoint()]);
 	$('.layer'+(pattern.layer-1)).each(function() {
 		$(this).attr('stroke-opacity','0.3');
@@ -473,6 +507,11 @@ function newLayer() {
 	$('.layer'+(pattern.layer-2)).each(function() {
 		$(this).attr('stroke-opacity','0.08');
 	});
+	var initialNextZ = pattern.layersBottomZs[pattern.layersBottomZs.length - 1] + pattern.layerHeight;
+	pattern.layersBottomZs.push(initialNextZ);
+	$('#gcode').html($('#gcode').html() + 
+		';'+pattern.step+' (new layer) \n' +
+		'G00 X' +  pattern.lastPoint()[0].gx + ' Y' + pattern.lastPoint()[0].gy + ' Z' + pattern.layersBottomZs[pattern.layer] + ' \n');
 }
 
 
@@ -501,12 +540,24 @@ function ctrlZ() {
 	  alert("Can't undo");
 	  return;
 	}
-	if (!hadThisLayerSteps) {
-		alert("Can't undo");
-	  return;
+	if (!hadThisLayerSteps) {//Step back to previous layer
+		try {
+	    while (pattern.crossingPointsHistory[pattern.layer-1][ pattern.crossingPointsHistory[pattern.layer-1].length-1 ][1] == pattern.step) {
+				pattern.crossingPointsHistory[pattern.layer-1].pop();
+				
+			}
+			pattern.layer--;
+			pattern.layersBottomZs.pop();
+		}
+		catch(err) {
+		  alert("Can't undo");
+		  return;
+		}
 	}
 	$('#gcode').html(gcode);
-	document.getElementById('layerWeaves').removeChild(document.getElementById('pathshadow'+pattern.step));
-	document.getElementById('layerWeaves').removeChild(document.getElementById('path'+pattern.step));
+	if (hadThisLayerSteps) {
+		document.getElementById('layerWeaves').removeChild(document.getElementById('pathshadow'+pattern.step));
+		document.getElementById('layerWeaves').removeChild(document.getElementById('path'+pattern.step));
+	}
 	pattern.step--;
 }

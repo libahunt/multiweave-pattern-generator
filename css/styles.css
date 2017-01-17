@@ -1,10 +1,15 @@
-
 * {
 	box-sizing: border-box;
 }
+
 body {
-	padding: 5%;
+	padding: 0 5% 5%;
 	font-family: arial, sans-serif;
+	background: #7D7D7D url(../img/mwbg.jpg) no-repeat top center fixed;
+  -webkit-background-size: cover;
+  -moz-background-size: cover;
+  -o-background-size: cover;
+  background-size: cover;
 }
 
 .clear {
@@ -12,18 +17,159 @@ body {
 	height: 1px;
 }
 
+
+/*"Logo"*/
+h1 {
+	text-align: center;
+}
+h1 .multi {
+	color:#fdb827 !important;
+} 
+h1 .weave {
+	color:#fff !important;
+} 
+
+h3 {
+	color:#fff;
+}
+
+/*Layout elements*/
+#intro-wrapper {
+	background: url(../img/ltr.png) repeat;
+	border-radius: 10px;
+	padding: 10px 10px;
+	margin-bottom:20px;
+}
+
+#intro-wrapper h3 {
+	text-align: center;
+	font-size: 30px;
+}
+
+#intro-wrapper p {
+	padding: 0px 40px;
+	line-height: 1.7em;
+	text-align: center;
+}
+#images {
+	overflow: hidden;
+	margin-bottom: 0px;
+}
+#images img {
+	border: 1px solid #f0f0f0;
+	width: 18%;
+	float: left;
+	margin: 1%;
+}
+
+#gcode-wrapper {
+	border-radius: 10px;
+	padding: 10px 0;
+	width: 540px;
+	margin: 0 auto;
+}
+
+#gcode-wrapper h3 {
+	color: #ffffff;
+	text-shadow: 0px 0px 3px #222222;
+}
+
+textarea#gcode {
+	width: 500px;
+	height: 100px;
+	border: 1px solid #cccccc;
+}
+
+/*Big button below intro*/
+#goto-pattern-button {
+  background: #eb8900;
+  background-image: -webkit-linear-gradient(top, #eb8900, #d74700);
+  background-image: -moz-linear-gradient(top, #eb8900, #d74700);
+  background-image: -ms-linear-gradient(top, #eb8900, #d74700);
+  background-image: -o-linear-gradient(top, #eb8900, #d74700);
+  background-image: linear-gradient(to bottom, #eb8900, #d74700);
+  -webkit-border-radius: 8;
+  -moz-border-radius: 8;
+  border-radius: 8px;
+  font-family: Arial;
+  color: #ffffff;
+  font-size: 20px;
+  padding: 10px 20px 10px 20px;
+  text-decoration: none;
+  border: 0;
+  cursor: pointer;
+  width:100%;
+  border: 1px solid #d74700;
+      box-shadow: 0px 1px 2px #a78a7c;
+	  text-shadow: 1px 0px 3px #190900;
+	display: table;
+	width: auto;
+	margin: 20px auto;
+}
+
+/*Pattern editor small buttons*/
+button#endWarping, 
+button#undo,
+button#newLayer {
+  background: #eb8900;
+  background-image: -webkit-linear-gradient(top, #eb8900, #d74700);
+  background-image: -moz-linear-gradient(top, #eb8900, #d74700);
+  background-image: -ms-linear-gradient(top, #eb8900, #d74700);
+  background-image: -o-linear-gradient(top, #eb8900, #d74700);
+  background-image: linear-gradient(to bottom, #eb8900, #d74700);
+  -webkit-border-radius: 4;
+  -moz-border-radius: 4;
+  border-radius: 4px;
+  font-family: Arial;
+  color: #ffffff;
+  font-size: 14px;
+  padding: 6px 12px;
+  text-decoration: none;
+  border: 0;
+  cursor: pointer;
+  width: auto;
+  border: 1px solid #d74700;
+  box-shadow: 0px 1px 2px #a78a7c;
+  text-shadow: 1px 0px 3px #190900;
+  float: left;
+}
+
+button#newLayer {
+	float: right;
+}
+		
+button:focus {
+	outline: none !important;
+}
+
+button:hover {
+  background: #d74700;
+  text-decoration: none;
+}
+
+
+/******************************************************
+PATTERN EDITOR
+******************************************************/
+#work-area {
+	float: left;
+	margin: 0 20px;
+}
+
 #pattern {
 	position: relative;
 	clear: both;
 	overflow: hidden;
 	border: 1px solid #cccccc;
-	margin: 0;
+	margin: 8px 0 0;
+	background: url(../img/ltr.jpg);
+	border-radius: 10px;
 }
 
-#work-area {
-	float: left;
-	margin: 0 20px;
+#layerWeaves {
+	background: #fff;
 }
+
 #instructions {
 	display: inline;
 	color: #ffffff;
@@ -90,18 +236,10 @@ body {
 	display: none;/*hide start point that exists before others*/
 }
 
-.explanation {
-	color: #bbbbbb;
-	font-size: 12px;
-}
 
-#images {
-	overflow: hidden;
-	margin-bottom: 0px;
-}
-#images img {
-	border: 1px solid #f0f0f0;
-	width: 18%;
-	float: left;
-	margin: 1%;
-}
+
+
+
+
+
+	

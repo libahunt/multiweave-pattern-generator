@@ -323,7 +323,7 @@ function route(point1, point2) {
  */
 
 function gcodeLine(point1, point2, Zheight) {
-	return  ';'+pattern.step+' \n' +
+	return  '('+pattern.step+')\n' +
 		'G00 X' +  point1.gx + ' Y' + point1.gy + ' Z' + Zheight + ' \n' +
 		'G00 X' +  point2.gx + ' Y' + point2.gy + ' Z' + Zheight + ' \n';
 	//G00 X#.#### Y#.#### Z#.#### //maximum feed rate
@@ -331,7 +331,7 @@ function gcodeLine(point1, point2, Zheight) {
 }
 
 function gcodeArc(point1, point2, commonWarp, direction, Zheight) {
-	var result = ';'+pattern.step+' \n' +
+	var result = '('+pattern.step+')\n' +
 		'G00 X' +  point1.gx + ' Y' + point1.gy + ' Z' + Zheight + ' \n' +
 		'G';
 	if (direction=='cw') {
@@ -486,6 +486,7 @@ function endWarping() {
 	$('#newLayer').show();
 	$('#prewarping-instruction').hide();
 	$('#weaving-instruction').show();
+	$('#gcode').html('G90 \n');
 	$('#gcode-wrapper').show();
 	$(this).hide();
 }
@@ -510,7 +511,7 @@ function newLayer() {
 	var initialNextZ = pattern.layersBottomZs[pattern.layersBottomZs.length - 1] + pattern.layerHeight;
 	pattern.layersBottomZs.push(initialNextZ);
 	$('#gcode').html($('#gcode').html() + 
-		';'+pattern.step+' (new layer) \n' +
+		'('+pattern.step+' new layer) \n' +
 		'G00 X' +  pattern.lastPoint()[0].gx + ' Y' + pattern.lastPoint()[0].gy + ' Z' + pattern.layersBottomZs[pattern.layer] + ' \n');
 }
 
@@ -522,8 +523,8 @@ function newLayer() {
 
 function ctrlZ() {
 	var gcode = $('#gcode').html();
-	if(gcode.lastIndexOf("\n")>-1) {
-	  gcode = gcode.substring(0, gcode.lastIndexOf(";"));
+	if(gcode.lastIndexOf("(")>-1) {
+	  gcode = gcode.substring(0, gcode.lastIndexOf("("));
 	} 
 	else {
 	  alert("Can't undo");

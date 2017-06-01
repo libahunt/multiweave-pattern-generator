@@ -142,7 +142,7 @@ function ctrlZ() {
 
   //TODO update sublayer counters in all points that were on the way
   //TODO update pattern.sublayers last element on undo
-
+  
 
   //Ignore when no content is created
   if (pattern.userMoveNo==0) {

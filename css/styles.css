@@ -69,9 +69,12 @@ h3 {
 	margin: 0 auto;
 }
 
-#gcode-wrapper h3 {
+#gcode-wrapper {
 	color: #ffffff;
-	text-shadow: 0px 0px 3px #222222;
+}
+
+#weft-distance {
+	width: 7em;
 }
 
 textarea#gcode {
@@ -108,9 +111,7 @@ textarea#gcode {
 }
 
 /*Pattern editor small buttons*/
-button#endWarping, 
-button#undo,
-button#newLayer {
+button {
   background: #eb8900;
   background-image: -webkit-linear-gradient(top, #eb8900, #d74700);
   background-image: -moz-linear-gradient(top, #eb8900, #d74700);
@@ -131,13 +132,17 @@ button#newLayer {
   border: 1px solid #d74700;
   box-shadow: 0px 1px 2px #a78a7c;
   text-shadow: 1px 0px 3px #190900;
-  float: left;
+}
+
+button#endWarping,
+button#undo {
+	float: left;
 }
 
 button#newLayer {
 	float: right;
 }
-		
+
 button:focus {
 	outline: none !important;
 }
@@ -219,6 +224,17 @@ PATTERN EDITOR
 .point:active {
 	background: rgba(255,0,0,0.2);
 }
+
+.point.current {
+	background: rgba(238, 1, 254, 0.2);
+}
+.point.current:after {
+	background: #ee01fe;
+}
+.point.current:hover {
+	background: rgba(238, 1, 254, 0.2);/*no change on hover*/
+}
+
 .point.start:before {
 	display: block;
 	content: "start";
@@ -228,15 +244,22 @@ PATTERN EDITOR
 	top: -12px;
 	right: 0;
 }
-.point.start,
-.point.start:hover {
-	background: transparent;
-}
+
 .prewarping .point {
 	display: none;/*hide start point that exists before others*/
 }
 
-
+#layer-indicator {
+	float: right;
+	font-size: 1.2em;
+	color: #ffffff;
+	margin-right: 1em;
+}
+#layer-indicator:before {
+	display: inline;
+	content: "Layer no: ";
+	font-size: 0.65em;
+}
 
 
 

@@ -6,7 +6,9 @@
 var Point = function(x, y, ownerWarp0) {
   this.x = x;
   this.y = y;
-  this.sublayers = [0]; //Array element for each actual layer.
+  this.sublayers = [[]]; //1. Array for each actual layer.
+  // 2. Elements (missing yet) will be arrays that consist of two "levels" for each step that passed this point
+  // and the 2 levels are "on entry" and "on exit" - so it's possible to keep track of history and undo it.
   this.ownerWarps = [ownerWarp0];
   this.div = undefined;
 };
@@ -22,6 +24,7 @@ Point.prototype.draw = function() {
           $(this).addClass('start');
           pattern.steps.push([new Step(null, obj, null, null, null, 0, true)]);
           pattern.userMoveNo = 1;
+          obj.sublayers[0].push([0, null]);
         }
         else {
           route(

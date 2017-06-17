@@ -7,7 +7,7 @@ var Step = function(StartPoint, EndPoint, lineType, arcDir, Warp, sublayer, star
   this.EndPoint = EndPoint;  //Refers to point object
   this.lineType = lineType; //'arc' or 'line'
   this.arcDir = arcDir; //'cw' or 'ccw'
-  this.Warp = Warp; //Refers to weft object that is the center of the arc
+  this.Warp = Warp; //Refers to warp object that is the center of the arc
   this.sublayer = sublayer; //sublayer number
   this.startOfUserCommand = startOfUserCommand; //Helper for "undo" to work properly
 };

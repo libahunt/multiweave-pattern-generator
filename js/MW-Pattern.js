@@ -33,8 +33,8 @@ var Pattern = function(noOfWarpsX, noOfWarpsY) {
   this.steps = [];
   this.userMoveNo = 0; //Counter keeps track of html elements to be deleted when undo function is used.
 
-  //Array to save how many sub layers exist in each user defined layer. Current layer's element gets incremented when thread crosses itself.
   this.currentLayer = 0;
+  //Array to save how many sub layers exist in each user defined layer. Calculated on generating next main layer.
   this.sublayers = [1];
 
 

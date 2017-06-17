@@ -8,7 +8,7 @@
  * Adds Step object into pattern.steps array.
  */
 function route(point1, point2) {
-  //TODO refactor some pieces out from here
+  //TODO: maybe refactor some parts out from this spaghetti?
 
   pattern.userMoveNo++;
 
@@ -25,7 +25,9 @@ function route(point1, point2) {
   }
 
   var lineType = 'line';
-  if (commonWarp != undefined) lineType = 'arc';
+  if (commonWarp != undefined) {
+    lineType = 'arc';
+  }
 
 
 
@@ -83,8 +85,29 @@ function route(point1, point2) {
     if (point2.sublayers[pattern.currentLayer].length > 0 && lastElementOf(point2.sublayers[pattern.currentLayer])[1] + 1 > thisStepSublayer) {
       thisStepSublayer = lastElementOf(point2.sublayers[pattern.currentLayer])[1] + 1;
     }
-    //TODO check straight lines intersections with each other
-    //checkLineIntersection(line1.startX, line1.startY, line1.endX, line1.endY, line2.startX, line2.startY, line2.endX, line2.endY);
+    //Check straight lines intersections with each other (lineintersection.js)
+    for (i=0; i<pattern.steps[pattern.currentLayer].length; i++) {
+      if (pattern.steps[pattern.currentLayer][i].lineType == 'line') {
+        var comparableStep = pattern.steps[pattern.currentLayer][i];
+        var intersection = checkLineIntersection(
+            point1.x, point1.y,
+            point2.x, point2.y,
+            comparableStep.StartPoint.x, comparableStep.StartPoint.y,
+            comparableStep.EndPoint.x, comparableStep.EndPoint.y
+        );
+        if (intersection.onLine1 && intersection.onLine2) {
+          if (thisStepSublayer < lastElementOf(lastElementOf(comparableStep.StartPoint.sublayers))[1] + 1) {
+            thisStepSublayer = lastElementOf(lastElementOf(comparableStep.StartPoint.sublayers))[1] + 1;
+          }
+          if (thisStepSublayer < lastElementOf(lastElementOf(comparableStep.EndPoint.sublayers))[1] + 1) {
+            thisStepSublayer = lastElementOf(lastElementOf(comparableStep.EndPoint.sublayers))[1] + 1;
+          }
+
+        }
+
+      }
+
+    }
 
     //Update each point's sublayer height
     point1.sublayers[pattern.currentLayer][point1.sublayers[pattern.currentLayer].length-1][1] = thisStepSublayer;

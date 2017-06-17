@@ -48,6 +48,7 @@ function route(point1, point2) {
     if (point2.sublayers[pattern.currentLayer].length > 0 && lastElementOf(point2.sublayers[pattern.currentLayer])[1] + 1 > thisStepSublayer) {
       thisStepSublayer = lastElementOf(point2.sublayers[pattern.currentLayer])[1] + 1;
     }
+    console.log(thisStepSublayer);
 
     //Update each point's sublayer height
     point1.sublayers[pattern.currentLayer][point1.sublayers[pattern.currentLayer].length-1][1] = thisStepSublayer;
@@ -78,6 +79,7 @@ function route(point1, point2) {
 
   //Points don't have a common warp, the path will be straight line
   else {
+    //TODO: sublayer sometimes gets a not needed +1, find out why
 
     //Initially choose sublayer according to start point's entry height.
     var thisStepSublayer = lastElementOf(point1.sublayers[pattern.currentLayer])[0];
@@ -108,6 +110,7 @@ function route(point1, point2) {
       }
 
     }
+    console.log(thisStepSublayer);
 
     //Update each point's sublayer height
     point1.sublayers[pattern.currentLayer][point1.sublayers[pattern.currentLayer].length-1][1] = thisStepSublayer;
@@ -183,6 +186,7 @@ function ctrlZ() {
       var startOfMoveDeleted = false;
       do {
         startOfMoveDeleted = lastElementOf(lastElementOf(pattern.steps)).startOfUserCommand;
+        pattern.steps[pattern.steps.length-1][pattern.steps[pattern.steps.length-1].length-1].EndPoint.sublayers[pattern.currentLayer].pop();
         pattern.steps[pattern.steps.length-1].pop(); //remove step
       }
       while (!startOfMoveDeleted);
@@ -208,6 +212,11 @@ function ctrlZ() {
   if (!hadThisLayerSteps) {//No steps on this layer. Step back to previous layer (delete current one)
     try {
       if (pattern.currentLayer > 0) {//First layer with start point is special case
+        //Remove last sublayer element from point objects
+        for (i=0; i<pattern.crossingPoints.length; i++) {
+          pattern.crossingPoints[i].sublayers.pop();
+        }
+
         pattern.currentLayer--;
 
         //Make drawings of now active previous layer opaque again

@@ -118,7 +118,6 @@ function endWarping() {
 	$('#newLayer').show();
 	$('#prewarping-instruction').hide();
 	$('#weaving-instruction').show();
-	$('#gcode').html('G90 \n');
 	$('#gcode-wrapper').show();
 	$(this).hide();
 }

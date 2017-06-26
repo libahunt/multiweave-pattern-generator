@@ -60,9 +60,17 @@
 		<p id="g-code-param-form">
 			<label for="weft-distance">Weft distance</label>
 			<input id="weft-distance" type="number" step="0.000001" value="15.588457">&nbsp;&nbsp;mm &nbsp;<br>
+
+			<label for="board-left">Machine coordinates at center of leftmost weft (closest to x=0)</label>
+			<input id="board-left" type="number" step="0.1" value="15.0">&nbsp;&nbsp;mm &nbsp;<br>
+			<label for="board-bottom">Machine coordinates at center of bottommost weft (closest to Y=0)</label>
+			<input id="board-bottom" type="number" step="0.1" value="15.0">&nbsp;&nbsp;mm &nbsp;<br>
+
+			<label for="bottom-layer">Height of bottom layer (z machine coordinate)</label>
+			<input id="bottom-layer" type="number" step="0.01" value="2.00">&nbsp;&nbsp;mm &nbsp;
       <label for="layer-thickness">Thread layer thickness</label>
       <input id="layer-thickness" type="number" step="0.01" value="2.00">&nbsp;&nbsp;mm &nbsp;
-			<button id="generateGcode">Generate g-code form pattern</button>
+			<button id="generateGcode">Generate g-code from pattern</button>
 		</p>
 		<textarea id="gcode" style="display: none;"></textarea>
 	</div>
@@ -81,7 +89,8 @@
 	<script src="js/MW-Step.js"></script>
   <script src="js/MW-user-actions.js"></script>
   <script src="js/MW-SVG.js"></script>
-  <script src="js/scripts.js"></script>
 	<script src="js/MW-gcode.js"></script>
+  <script src="js/scripts.js"></script>
+
 </body>
 </html>

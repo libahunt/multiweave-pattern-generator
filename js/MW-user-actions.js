@@ -48,7 +48,6 @@ function route(point1, point2) {
     if (point2.sublayers[pattern.currentLayer].length > 0 && lastElementOf(point2.sublayers[pattern.currentLayer])[1] + 1 > thisStepSublayer) {
       thisStepSublayer = lastElementOf(point2.sublayers[pattern.currentLayer])[1] + 1;
     }
-    console.log(thisStepSublayer);
 
     //Update each point's sublayer height
     point1.sublayers[pattern.currentLayer][point1.sublayers[pattern.currentLayer].length-1][1] = thisStepSublayer;

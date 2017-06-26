@@ -38,7 +38,7 @@ h3 {
 	background: url(../img/ltr.png) repeat;
 	border-radius: 10px;
 	padding: 10px 10px;
-	margin-bottom:20px;
+	margin-bottom: 20px;
 }
 
 #intro-wrapper h3 {
@@ -65,25 +65,13 @@ h3 {
 #gcode-wrapper {
 	border-radius: 10px;
 	padding: 10px 0;
-	width: 540px;
-	margin: 0 auto;
-}
-
-#gcode-wrapper {
+	margin: 0 20px;
 	color: #ffffff;
+	text-shadow: 0px 0px 3px #222222;
 }
 
-#weft-distance {
-	width: 7em;
-}
 
-textarea#gcode {
-	width: 500px;
-	height: 100px;
-	border: 1px solid #cccccc;
-}
-
-/*Big button below intro*/
+/*Big button below intro*
 #goto-pattern-button {
   background: #eb8900;
   background-image: -webkit-linear-gradient(top, #eb8900, #d74700);
@@ -108,9 +96,9 @@ textarea#gcode {
 	display: table;
 	width: auto;
 	margin: 20px auto;
-}
+}*/
 
-/*Pattern editor small buttons*/
+/*Pattern editor buttons*/
 button {
   background: #eb8900;
   background-image: -webkit-linear-gradient(top, #eb8900, #d74700);
@@ -152,6 +140,36 @@ button:hover {
   text-decoration: none;
 }
 
+/******************************************************
+FORMS
+******************************************************/
+
+/*Choosing size for new pattern*/
+#start-choices label {
+	display: inline-block;
+	width: 17em;
+}
+#warps-count-x,
+#warps-count-y {
+	width: 4em;
+}
+
+
+/*G-code area*/
+#gcode-wrapper label {
+	display: inline-block;
+	width: 30em;
+}
+
+#gcode-wrapper input[type=number] {
+	width: 7em;
+}
+
+textarea#gcode {
+	width: 500px;
+	height: 100px;
+	border: 1px solid #cccccc;
+}
 
 /******************************************************
 PATTERN EDITOR
@@ -159,6 +177,7 @@ PATTERN EDITOR
 #work-area {
 	float: left;
 	margin: 0 20px;
+	color: #ffffff;
 }
 
 #pattern {
@@ -179,6 +198,10 @@ PATTERN EDITOR
 	display: inline;
 	color: #ffffff;
 	text-shadow: 0px 0px 3px #222222;
+}
+
+#instructions p {
+	overflow: hidden;
 }
 
 .warp {
@@ -260,9 +283,3 @@ PATTERN EDITOR
 	content: "Layer no: ";
 	font-size: 0.65em;
 }
-
-
-
-
-
-	

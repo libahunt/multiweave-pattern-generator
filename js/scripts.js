@@ -5,25 +5,11 @@ $(function() {
   //TODO when save functionality gets created, load pattern from json Pattern.loadFromJSON()
   //TODO Pattern.drawExisting() if loading saved pattern
 
-	//Initialize new pattern object
-	pattern = new Pattern(12,15);
-  //TODO make pattern Wefts layout size choosable for new patterns
-  //Draw new pattern.
-  pattern.drawNew();
-
-  
-  //Interface CSS update
-	$("#pattern, #layerWeaves")
-		.css('width', pattern.canvasWidth+ 'px')
-		.css('height', pattern.canvasHeight+ 'px');
-	$("#work-area")
-		.css('width', (pattern.canvasWidth + 2) + 'px');
-
-
 
 	/**
 	 * Buttons event handlers
 	 */
+	$('#startWarping').on('click', startPattern);
 	$('#endWarping').on('click', endWarping);
 	$('#undo').on('click', ctrlZ);
 	$('#newLayer').on('click', newLayer);
@@ -34,7 +20,26 @@ $(function() {
 
 
 
+function startPattern () {
 
+  //Initialize new pattern object
+  pattern = new Pattern(parseInt($('#warps-count-x').val()),parseInt($('#warps-count-y').val()));
+
+  $('#start-choices').hide();
+  $('#work-area').show();
+  $('#prewarping-instruction').show();
+
+  //Draw new pattern.
+  pattern.drawNew();
+
+
+  //Interface CSS update
+  $("#pattern, #layerWeaves")
+      .css('width', pattern.canvasWidth+ 'px')
+      .css('height', pattern.canvasHeight+ 'px');
+  $("#work-area")
+      .css('width', (pattern.canvasWidth + 2) + 'px');
+}
 
 
 

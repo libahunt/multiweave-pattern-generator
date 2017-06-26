@@ -6,6 +6,8 @@ var gx, gy,layerThickness, boardXmargin, boardYmargin, currentLayerBaseHeight;
 
 function generateGCode() {
 
+  $('#gcode').html('');
+
   gx = $('#weft-distance').val() / pattern.warpSpacingX;
   gy = Math.sqrt(Math.pow(gx,2) - Math.pow(gx/2,2));
   layerThickness = parseFloat($('#layer-thickness').val());
@@ -136,6 +138,7 @@ function generateGCode() {
     }
 
     currentSubLayer = 0;//Reset the sublayer for next user selected main layer
+
   }
 
   $('#gcode').show();

@@ -44,15 +44,9 @@ function generateGCode() {
       }
 
       else if (j==0) { //this step marks the beginning of new layer, z movement only
-        //Find highest sublayer in last layer
-        maxSubLayerLevel = 0;
-        for (k=0; k>pattern.steps.length; k++) {
-          if (pattern.steps[k].sublayer > maxSubLayerLevel) {
-            maxSubLayerLevel = pattern.steps[k].sublayer;
-          }
-        }
-        //Calculate the new layer base from it
-        currentLayerBaseHeight += maxSubLayerLevel * layerThickness + layerThickness;
+
+        //Calculate the new layer base from last layer sublayers number
+        currentLayerBaseHeight += pattern.sublayers[i-1] * layerThickness + layerThickness;
         //Generate g-code
         gcodeComment('Layer ' + i +', move 0');
         gcodeLine(null, null, 0);

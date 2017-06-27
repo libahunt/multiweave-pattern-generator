@@ -258,6 +258,16 @@ PATTERN EDITOR
 	background: rgba(238, 1, 254, 0.2);/*no change on hover*/
 }
 
+.point.hilight-layerstart {
+	background: rgba(0, 0, 200, 0.15);
+}
+.point.hilight-layerstart:hover {
+	background: rgba(200,0,0,0.2);;/*normal hover*/
+}
+.point.hilight-layerstart.current {
+	background: rgba(0, 0, 200, 0.3);
+}
+
 .point.start:before {
 	display: block;
 	content: "start";
@@ -272,7 +282,8 @@ PATTERN EDITOR
 	display: none;/*hide start point that exists before others*/
 }
 
-#layer-indicator {
+#layer-indicator,
+#total-sublayers {
 	float: right;
 	font-size: 1.2em;
 	color: #ffffff;
@@ -280,6 +291,32 @@ PATTERN EDITOR
 }
 #layer-indicator:before {
 	display: inline;
-	content: "Layer no: ";
+	content: "Current layer no: ";
 	font-size: 0.65em;
 }
+#total-sublayers:before {
+	display: inline;
+	content: "Sublayer count at last layer: ";
+	font-size: 0.65em;
+}
+
+
+
+/*#layer-repetition-toggle:before {
+	display: inline;
+	content: "> Show ";
+}
+#layer-repetition-toggle.open:before {
+	content: "> Hide ";
+}*/
+#layer-repetition-tools table {
+	border-collapse: collapse;
+	border-top: 1px solid #aaaaaa;
+	border-bottom: 1px solid #aaaaaa;
+}
+#layer-repetition-tools table td {
+	padding: 0.2em;
+	border: 1px solid #aaaaaa;
+}
+
+

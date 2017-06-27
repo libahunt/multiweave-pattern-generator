@@ -109,7 +109,6 @@ function route(point1, point2) {
       }
 
     }
-    console.log(thisStepSublayer);
 
     //Update each point's sublayer height
     point1.sublayers[pattern.currentLayer][point1.sublayers[pattern.currentLayer].length-1][1] = thisStepSublayer;
@@ -137,7 +136,24 @@ function route(point1, point2) {
 
 function newLayer() {
 
-  //TODO calculate pattern.sublayers element for previous layer, if this is needed...
+  if (pattern.steps[pattern.currentLayer] == undefined) {
+    //Find highest sublayer in last layer
+    var maxSubLayerLevel = 0;
+    for (k=0; k<pattern.steps[pattern.currentLayer].length-1; k++) {
+      if (pattern.steps[pattern.currentLayer][k].sublayer > maxSubLayerLevel) {
+
+        maxSubLayerLevel = pattern.steps[pattern.currentLayer][k].sublayer;
+      }
+    }
+    pattern.sublayers.push(maxSubLayerLevel);
+    pattern.sublayersTotal += maxSubLayerLevel + 1;
+
+  }
+  else {
+    pattern.sublayers.push(0);
+    pattern.sublayersTotal += 1;
+  }
+  $('#total-sublayers').html(pattern.sublayersTotal);
 
   pattern.currentLayer++;
   pattern.userMoveNo++;//TODO is this needed? used in ctrlZ detecting first step
@@ -162,6 +178,19 @@ function newLayer() {
 
   //Show new layer number in UI
   $('#layer-indicator').html(pattern.currentLayer);
+
+  //Add layer to layer-repetition tools table
+  $('#layer-repetition-tools thead').find('td.last').before('<td>'+(pattern.currentLayer-1)+'</td>');
+  $('#layer-repetition-tools #layer-repeat-highlight-radios').find('td.last').before(
+      '<td><input type="radio" name="layer-to-highlight" value="'+
+      (pattern.currentLayer-1)+
+      '"></td>'
+  );
+  $('#layer-repetition-tools #layer-repeat-radios').find('td.last').before(
+      '<td><input type="radio" name="layer-to-duplicate" value="'+
+      (pattern.currentLayer-1)+
+      '"></td>'
+  );
 
 }
 
@@ -211,6 +240,12 @@ function ctrlZ() {
   if (!hadThisLayerSteps) {//No steps on this layer. Step back to previous layer (delete current one)
     try {
       if (pattern.currentLayer > 0) {//First layer with start point is special case
+
+        //Take back the last sublayers count
+        pattern.sublayersTotal -= pattern.sublayers[pattern.sublayers.length-1] + 1;
+        pattern.sublayers.pop();
+        $('#total-sublayers').html(pattern.sublayersTotal);
+
         //Remove last sublayer element from point objects
         for (i=0; i<pattern.crossingPoints.length; i++) {
           pattern.crossingPoints[i].sublayers.pop();
@@ -226,6 +261,11 @@ function ctrlZ() {
         $('.layer'+(pattern.currentLayer-1)).each(function() {
           $(this).attr('stroke-opacity','0.3');
         });
+
+        //Remove layer from layer-repetition tools table
+        $('#layer-repetition-tools thead td').eq(-2).remove();
+        $('#layer-repetition-tools #layer-repeat-highlight-radios td').eq(-2).remove();
+        $('#layer-repetition-tools #layer-repeat-radios td').eq(-2).remove();
 
       }
       else {

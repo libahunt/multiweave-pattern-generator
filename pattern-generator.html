@@ -25,8 +25,9 @@
 			<button id="undo" style="display: none;">Undo</button>
 			<button id="newLayer" style="display: none;">New layer</button>
       <div id="layer-indicator">0</div>
-			<div class="clear"></div>
+			<div id="total-sublayers">0</div>
 		</div>
+		<div class="clear"></div>
 
 		<div id="pattern-wrapper">
 			<div id="pattern" class="prewarping">
@@ -35,6 +36,8 @@
 		</div>
 
 		<div class="clear"></div>
+
+
 
 		<button id="save" disabled="disabled" style="display: none;">Save</button>
 
@@ -57,12 +60,39 @@
 		<p id="prewarping-instruction" style="display: none;">The view shows the "cross-section" of fabric.<br>
 			These circles are possible positions for tubes that hold warp yarns upright. Choose the warps that you wish to use. Then click "Warping done".</p>
 
-		<p id="weaving-instruction" style="display: none;">Gray circles are warps that you chose. <br>
+		<div id="weaving-instruction" style="display: none;">
+			<p>Gray circles are warps that you chose. <br>
 			Click on the red dots to choose path for the weft thread.<br>
 			You can use "Undo" button if the line bumps into a tube or if the result does not look like you wanted it.<br>
 			When you need to pass same point for 3rd or 4th time, then it's logical to create new layer. Previous layers will remain visible in lighter color.<br>
 			<br>
 			When done drawing the pattern then G-code for the CNC machine can be generated at the bottom of page.</p>
+
+			<p>&nbsp;</p>
+
+			<div id="layer-repetition-tools">
+				<p><strong>Layer repetition tools</strong></p>
+				<p>Finished layer numbers appear in this table. Select a number to show it's start point. You can only duplicate a layer when thread is at it's start point.</p>
+				<table>
+					<thead>
+						<tr>
+							<td class="first">Layer no:</td>
+							<td class="last"><small>Do not show highlight</small></td>
+						</tr>
+					</thead>
+					<tbody>
+						<tr id="layer-repeat-highlight-radios">
+							<td class="first"><small>(selected shows blue highlight at the start point)</small></td>
+							<td class="last">
+								<input type="radio" name="layer-to-highlight" value="" checked="checked">
+							</td>
+						</tr>
+					</tbody>
+				</table>
+				<br>
+				<button id="layer-duplicate">Duplicate selected layer</button>
+			</div>
+		</div>
 	</div>
 
 	<div class="clear"></div>
@@ -103,6 +133,7 @@
   <script src="js/MW-user-actions.js"></script>
   <script src="js/MW-SVG.js"></script>
 	<script src="js/MW-gcode.js"></script>
+	<script src="js/MW-layer-repeat.js"></script>
   <script src="js/scripts.js"></script>
 
 </body>

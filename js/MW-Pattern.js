@@ -35,7 +35,8 @@ var Pattern = function(noOfWarpsX, noOfWarpsY) {
 
   this.currentLayer = 0;
   //Array to save how many sub layers exist in each user defined layer. Calculated on generating next main layer.
-  this.sublayers = [1];
+  this.sublayers = [];
+  this.sublayersTotal = 0;
 
 
 };

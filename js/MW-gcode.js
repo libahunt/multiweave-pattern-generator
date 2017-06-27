@@ -72,6 +72,7 @@ function generateGCode() {
               nextStep.sublayer == thisStep.sublayer) {
             continuousArc = true;
             arcStartPoint = thisStep.StartPoint;
+            stepNumbers = [];
             stepNumbers.push(moveCounter);
             moveCounter++;
           }
@@ -118,7 +119,6 @@ function generateGCode() {
               gcodeLine(null, null, currentSubLayer);
             }
             gcodeArc(arcStartPoint, thisStep.EndPoint, thisStep.Warp, thisStep.arcDir);
-            moveCounter++;
             continuousArc = false;
             arcStartPoint = undefined;
           }
@@ -130,8 +130,9 @@ function generateGCode() {
         if (thisStep.sublayer != currentSubLayer) {
           currentSubLayer = thisStep.sublayer;
           gcodeLine(null, null, currentSubLayer);
-          moveCounter++;
         }
+        gcodeLine(thisStep.EndPoint.x, thisStep.EndPoint.y, null);
+        moveCounter++;
 
       }
 

@@ -18,34 +18,129 @@
 
 <body>
 	
-	<h1><span class="multi">Multi</span><span class="weave">Weave</span></h1>
+	<div id="work-area" style="display: none;">
 
-	<div id="intro-wrapper">
-		<p>MultiWeave is a 3D textile weaving machine.<br>
-		<a href="http://www.railreed.ee/multiweave-people-process">Take a look at the hardware we built at Tehnohack (21.-23. October 2016 in Tallinn)</a><br>
-		Here is software to generate gcode for the CNC weaving machine.
-		<br>
-		</p>
-		<div id="images">
-			<img src="images/MWstep1.png" alt="">
-			<img src="images/MWstep1-rl1.jpg" alt="">
-			<img src="images/MWstep2.png" alt="">
-			<img src="images/MWstep2-rl1.jpg" alt="">
-			<img src="images/MWstep3-rl1.jpg" alt="">
+		<div id="top-buttons">
+			<button id="endWarping">Warping done</button>
+			<button id="undo" style="display: none;">Undo</button>
+			<button id="newLayer" style="display: none;">New layer</button>
+      <div id="layer-indicator">0</div>
+			<div id="total-sublayers">0</div>
+		</div>
+		<div class="clear"></div>
+
+		<div id="pattern-wrapper">
+			<div id="pattern" class="prewarping">
+				<svg id="layerWeaves"></svg>
+			</div>
 		</div>
 
 		<div class="clear"></div>
 
-		<a id="goto-pattern-button" href="./pattern-generator.html">Go to MultiWeave pattern generator</a>
 
+
+		<button id="save" disabled="disabled" style="display: none;">Save</button>
+
+		<div class="clear"></div>
 	</div>
 
-	
+	<div id="instructions">
+		<h1><span class="multi">Multi</span><span class="weave">Weave</span></h1>
+		<br>
+
+		<div id="start-choices" class="cols-wrapper">
+			<div class="col left">
+				Choose size of warp grid<br><br>
+				<label for="warps-count-x">Number of warps in a row</label>
+				<input id="warps-count-x" type="number" value="12"><br>
+				<label for="warps-count-y">Number of rows (zig-zagged)</label>
+				<input id="warps-count-y" type="number" value="15"><br><br>
+				<button id="startWarping">Start</button>
+			</div>
+			<div class="col right">
+				<img src="images/grid_size_example.png" alt="" width="304" height="180">
+			</div>
+
+		</div>
+
+		<p id="prewarping-instruction" style="display: none;">The view shows the "cross-section" of fabric.<br>
+			These circles are possible positions for tubes that hold warp yarns upright. Choose the warps that you wish to use. Then click "Warping done".</p>
+
+		<div id="weaving-instruction" style="display: none;">
+			<p>Gray circles are warps that you chose. <br>
+			Click on the red dots to choose path for the weft thread.<br>
+			You can use "Undo" button if the line bumps into a tube or if the result does not look like you wanted it.<br>
+			When you need to pass same point for 3rd or 4th time, then it's logical to create new layer. Previous layers will remain visible in lighter color.<br>
+			<br>
+			When done drawing the pattern then G-code for the CNC machine can be generated at the bottom of page.</p>
+
+			<p>&nbsp;</p>
+
+			<div id="layer-repetition-tools">
+				<p><strong>Layer repetition tools</strong></p>
+				<p>Finished layer numbers appear in this table. Select a number to show it's start point. You can only duplicate a layer when thread is at it's start point.</p>
+				<table>
+					<thead>
+						<tr>
+							<td class="first">Layer no:</td>
+							<td class="last"><small>Do not show highlight</small></td>
+						</tr>
+					</thead>
+					<tbody>
+						<tr id="layer-repeat-highlight-radios">
+							<td class="first"><small>(selected shows blue highlight at the start point)</small></td>
+							<td class="last">
+								<input type="radio" name="layer-to-highlight" value="" checked="checked">
+							</td>
+						</tr>
+					</tbody>
+				</table>
+				<br>
+				<button id="layer-duplicate">Duplicate selected layer</button>
+			</div>
+		</div>
+	</div>
+
+	<div class="clear"></div>
+
+
+	<div id="gcode-wrapper" style="display: none;">
+		<p id="g-code-param-form">
+			G-code parameters for specific machine<br><br>
+			<label for="weft-distance">Weft distance</label>
+			<input id="weft-distance" type="number" step="0.000001" value="15.588457">&nbsp;&nbsp;mm &nbsp;<br>
+
+			<label for="board-left">Machine coordinates at center of leftmost warp (closest to x=0)</label>
+			<input id="board-left" type="number" step="0.1" value="15.0">&nbsp;&nbsp;mm &nbsp;<br>
+			<label for="board-bottom">Machine coordinates at center of bottommost warp (closest to Y=0)</label>
+			<input id="board-bottom" type="number" step="0.1" value="15.0">&nbsp;&nbsp;mm &nbsp;<br>
+
+			<label for="bottom-layer">Height of bottom layer (z machine coordinate)</label>
+			<input id="bottom-layer" type="number" step="0.01" value="2.00">&nbsp;&nbsp;mm &nbsp;<br>
+      <label for="layer-thickness">Thread layer thickness</label>
+      <input id="layer-thickness" type="number" step="0.01" value="2.00">&nbsp;&nbsp;mm &nbsp;<br><br>
+			<button id="generateGcode">Generate g-code from pattern</button>
+		</p>
+		<textarea id="gcode" style="display: none;"></textarea>
+	</div>
+
+	<div class="clear"></div>
+
 	<div id="outro-wrapper">
 
 	</div>
 
 	<script src="js/jquery-3.1.1.min.js"></script>
-  <!--script src="js/scripts.js"></script-->
+	<script src="js/linesintersection.js"></script>
+	<script src="js/MW-Pattern.js"></script>
+	<script src="js/MW-Warp.js"></script>
+	<script src="js/MW-Point.js"></script>
+	<script src="js/MW-Step.js"></script>
+  <script src="js/MW-user-actions.js"></script>
+  <script src="js/MW-SVG.js"></script>
+	<script src="js/MW-gcode.js"></script>
+	<script src="js/MW-layer-repeat.js"></script>
+  <script src="js/scripts.js"></script>
+
 </body>
 </html>

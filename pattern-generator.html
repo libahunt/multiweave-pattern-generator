@@ -48,13 +48,19 @@
 		<h1><span class="multi">Multi</span><span class="weave">Weave</span></h1>
 		<br>
 
-		<div id="start-choices">
-			Choose size of warp grid<br><br>
-			<label for="warps-count-x">Number of warps in a row</label>
-			<input id="warps-count-x" type="number" value="12"><br>
-			<label for="warps-count-y">Number of rows (zig-zagged)</label>
-			<input id="warps-count-y" type="number" value="15"><br><br>
-			<button id="startWarping">Start</button>
+		<div id="start-choices" class="cols-wrapper">
+			<div class="col left">
+				Choose size of warp grid<br><br>
+				<label for="warps-count-x">Number of warps in a row</label>
+				<input id="warps-count-x" type="number" value="12"><br>
+				<label for="warps-count-y">Number of rows (zig-zagged)</label>
+				<input id="warps-count-y" type="number" value="15"><br><br>
+				<button id="startWarping">Start</button>
+			</div>
+			<div class="col right">
+				<img src="images/grid_size_example.png" alt="" width="304" height="180">
+			</div>
+
 		</div>
 
 		<p id="prewarping-instruction" style="display: none;">The view shows the "cross-section" of fabric.<br>

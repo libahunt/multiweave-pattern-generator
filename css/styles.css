@@ -319,4 +319,17 @@ PATTERN EDITOR
 	border: 1px solid #aaaaaa;
 }
 
-
+.cols-wrapper:after {
+	content: "";
+	display: block;
+	clear: both;
+}
+.col {
+	float: left;
+}
+.col {
+	margin: 0 4em 0 0;
+}
+.col.right {
+	margin: 0;
+}
